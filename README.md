@@ -80,7 +80,7 @@ After cloning, update these files to match your project:
 |----------------|-------|
 | Package name, version, author | `pyproject.toml` — `[project]` table |
 | Package source directory | Rename `python_package_template/` to your package name |
-| Public API exports | `<your_package>/__init__.py` — update `__all__` |
+| Public API exports | `<your_package>/__init__.py` — update `__all__` and the `version()` call |
 | Test imports | `tests/test_init.py` — update `from python_package_template import ...` |
 | README badges & description | `README.md` — replace repo URLs and badge tokens |
 | License | `LICENSE` — update copyright holder if needed |
@@ -198,7 +198,11 @@ Runs four parallel jobs for fast feedback:
 ├── scripts/
 │   └── setup-repo.sh               # One-time repo setup (branch protection)
 ├── .editorconfig                   # Editor settings for non-Python files
+├── .gitignore                      # Git ignore rules
+├── .pre-commit-config.yaml         # Pre-commit hook definitions
 ├── pyproject.toml                  # Project config, deps, tool settings
 ├── uv.lock                        # Locked dependency versions
-└── .pre-commit-config.yaml         # Pre-commit hook definitions
+├── CHANGELOG.md                   # Release history
+├── LICENSE                        # Apache-2.0 license
+└── README.md                      # This file
 ```
