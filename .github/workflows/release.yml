@@ -13,6 +13,7 @@ concurrency:
 
 jobs:
   release:
+    # Skip release commits from semantic-release to prevent infinite loops
     if: "!contains(github.event.head_commit.message, 'chore(release):')"
     runs-on: ubuntu-latest
     steps:
@@ -25,6 +26,9 @@ jobs:
         uses: astral-sh/setup-uv@v5
         with:
           enable-cache: true
+
+      - name: Install dependencies
+        run: uv sync --locked
 
       - name: Python Semantic Release
         uses: python-semantic-release/python-semantic-release@v10.2.0
