@@ -172,14 +172,16 @@ Runs four parallel jobs for fast feedback:
 │   ├── main.py                     # Core module with demo functions
 │   └── py.typed                    # PEP 561 type checking marker
 ├── tests/
+│   ├── conftest.py                 # Shared test fixtures
 │   └── test_init.py                # Unit tests
 ├── .github/
 │   ├── actions/setup-uv/           # Reusable CI composite action
+│   ├── dependabot.yml              # Automated dependency updates
 │   ├── ISSUE_TEMPLATE/             # Bug report & feature request forms
 │   ├── PULL_REQUEST_TEMPLATE.md    # PR checklist template
 │   └── workflows/
 │       ├── ci.yml                  # CI: parallel lint, format, typecheck, test matrix
-│       └── release.yml             # Auto-version, tag + GitHub Release on merge
+│       └── release.yml             # Gated on CI, auto-version + GitHub Release
 ├── .claude/                         # Claude Code AI assistant config
 │   ├── settings.json               # Permissions, hooks
 │   ├── rules/                      # Development standards
