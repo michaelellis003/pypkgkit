@@ -51,22 +51,28 @@ powershell -ExecutionPolicy ByPass -c "irm https://astral.sh/uv/install.ps1 | ie
     rm -rf .git && git init
     ```
 
-2. Install dependencies:
+2. Run the interactive setup script to rename the package and configure your project:
+    ```bash
+    ./scripts/init.sh
+    ```
+    This will prompt you for your package name, author info, and GitHub details, then update all references across the codebase automatically.
+
+3. Install dependencies:
     ```bash
     uv sync
     ```
 
-3. Enable pre-commit hooks:
+4. Enable pre-commit hooks:
     ```bash
     uv run pre-commit install
     ```
 
-4. Run the tests to verify everything works:
+5. Run the tests to verify everything works:
     ```bash
     uv run pytest -v --durations=0 --cov
     ```
 
-5. Configure branch protection (requires `gh` CLI and repo admin access):
+6. Configure branch protection (requires `gh` CLI and repo admin access):
     ```bash
     ./scripts/setup-repo.sh
     ```
@@ -74,7 +80,29 @@ powershell -ExecutionPolicy ByPass -c "irm https://astral.sh/uv/install.ps1 | ie
 
 ## Customizing the Template
 
-After cloning, update these files to match your project:
+The fastest way to set up your project is to run the interactive init script:
+
+```bash
+./scripts/init.sh
+```
+
+This handles the package rename, author info, GitHub URLs, version reset, and changelog reset automatically. After running it, the only manual steps remaining are:
+
+| What to do | Where |
+|------------|-------|
+| Replace demo code | `<your_package>/main.py` — replace `hello`, `add`, `subtract`, `multiply` with your own code |
+| Update public API | `<your_package>/__init__.py` — update `__all__` and imports |
+| Update tests | `tests/test_init.py` — replace demo tests with your own |
+| Set up Codecov | Add `CODECOV_TOKEN` secret in GitHub repo settings and add badge to `README.md` |
+| Update license | `LICENSE` — update copyright holder if needed |
+| Update Python versions | `requires-python` in `pyproject.toml` and matrix in `.github/workflows/ci.yml` |
+| Configure branch protection | Run `./scripts/setup-repo.sh` (requires `gh` CLI and admin access) |
+| Update keywords | `pyproject.toml` — `keywords` field (reset to empty by init script) |
+
+<details>
+<summary>Manual setup (without init script)</summary>
+
+If you prefer to customize manually, update these references:
 
 | What to change | Where |
 |----------------|-------|
@@ -87,7 +115,12 @@ After cloning, update these files to match your project:
 | Python versions | `requires-python` in `pyproject.toml` and matrix in `.github/workflows/ci.yml` |
 | Semantic release package name | `pyproject.toml` — `[tool.semantic_release]` update `--upgrade-package` in `build_command` |
 | Codecov token | Add `CODECOV_TOKEN` secret in your GitHub repo settings |
-| Branch protection | Run `./scripts/setup-repo.sh` or manually enable on `main` with required checks (needed for Dependabot auto-merge) |
+| Branch protection | Run `./scripts/setup-repo.sh` or manually enable on `main` with required checks |
+| `.claude/rules/` glob patterns | 4 files reference `python_package_template/**/*.py` |
+| `.claude/settings.json` | Update `Read(python_package_template/**)` permission |
+| `.claude/agents/test-writer.md` | Update import example |
+
+</details>
 
 The demo functions (`hello`, `add`, `subtract`, `multiply`) are provided as working examples of the TDD workflow. Replace them with your own code.
 
