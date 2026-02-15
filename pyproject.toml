@@ -12,6 +12,9 @@ keywords = ["template", "python", "uv", "ruff", "pyright"]
 classifiers = [
     "Development Status :: 4 - Beta",
     "Intended Audience :: Developers",
+    "License :: OSI Approved :: Apache Software License",
+    "Operating System :: OS Independent",
+    "Programming Language :: Python :: 3",
     "Programming Language :: Python :: 3.10",
     "Programming Language :: Python :: 3.11",
     "Programming Language :: Python :: 3.12",
@@ -156,6 +159,7 @@ exclude_lines = [
 version_toml = ["pyproject.toml:project.version"]
 branch = "main"
 commit_message = "chore(release): v{version}"
+# TODO: Update the --upgrade-package name to match your project name.
 build_command = """
     uv lock --upgrade-package python-package-template
     git add uv.lock

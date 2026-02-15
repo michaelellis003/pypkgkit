@@ -52,8 +52,13 @@ tests/
 scripts/
   setup-repo.sh                  # One-time repo setup (branch protection)
 .editorconfig                   # Editor settings for non-Python files
-pyproject.toml                  # Project config, deps, tool settings
+.gitignore                      # Git ignore rules
 .pre-commit-config.yaml         # Pre-commit hook definitions
+pyproject.toml                  # Project config, deps, tool settings
+uv.lock                        # Locked dependency versions
+README.md                      # User documentation
+CHANGELOG.md                   # Release history
+LICENSE                        # Apache-2.0 license
 ```
 
 ## Quick Reference — Development Commands
