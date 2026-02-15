@@ -5,7 +5,7 @@ Modular rules live in `.claude/rules/` — each covers a specific concern.
 
 ## Project Overview
 
-**python-package-template** (v0.3.0) — a production-ready template for
+**python-package-template** — a production-ready template for
 starting new Python packages. Uses uv, Ruff, Pyright, and pre-commit
 hooks. Licensed Apache-2.0.
 
@@ -18,12 +18,15 @@ TDD workflow.
 
 ```
 python_package_template/         # Main package source
-  __init__.py                    # Public API exports (add, multiply, hello)
+  __init__.py                    # Public API exports + __version__
   main.py                       # Core module with demo functions
+  py.typed                      # PEP 561 type checking marker
 tests/
   test_init.py                  # Unit tests
 .github/
   actions/setup-uv/            # Reusable CI composite action
+  ISSUE_TEMPLATE/              # Bug report & feature request forms
+  PULL_REQUEST_TEMPLATE.md     # PR checklist template
   workflows/
     ci.yml                      # CI: parallel lint, format, typecheck, test matrix
     release.yml                 # Release: python-semantic-release on merge to main
@@ -43,9 +46,9 @@ tests/
   agents/
     code-reviewer.md            # Code review subagent
     test-writer.md              # Test-first subagent
+.editorconfig                   # Editor settings for non-Python files
 pyproject.toml                  # Project config, deps, tool settings
 .pre-commit-config.yaml         # Pre-commit hook definitions
-.python-versions                # Supported Python versions
 ```
 
 ## Quick Reference — Development Commands

@@ -12,24 +12,12 @@ concurrency:
   group: ${{ github.workflow }}-${{ github.head_ref || github.ref }}
   cancel-in-progress: true
 
+# Tested Python versions. Keep in sync with requires-python in pyproject.toml.
+env:
+  PYTHON_VERSION: "3.13"
+
 jobs:
-  get-python-versions:
-    runs-on: ubuntu-latest
-    outputs:
-      max_version: ${{ steps.get-versions.outputs.max_version }}
-      matrix: ${{ steps.get-versions.outputs.matrix }}
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v4
-
-      - name: Get versions
-        id: get-versions
-        run: |
-          echo "max_version=$(tail -n 1 .python-versions)" >> $GITHUB_OUTPUT
-          echo "matrix={\"python-version\": $(cat .python-versions | jq -R -s -c 'split("\n") | map(select(length > 0))')}" >> $GITHUB_OUTPUT
-
   ruff-lint:
-    needs: get-python-versions
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
@@ -38,13 +26,12 @@ jobs:
       - name: Setup uv
         uses: ./.github/actions/setup-uv
         with:
-          python-version: ${{ needs.get-python-versions.outputs.max_version }}
+          python-version: ${{ env.PYTHON_VERSION }}
 
       - name: Ruff lint
         run: uv run ruff check .
 
   ruff-format:
-    needs: get-python-versions
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
@@ -53,13 +40,12 @@ jobs:
       - name: Setup uv
         uses: ./.github/actions/setup-uv
         with:
-          python-version: ${{ needs.get-python-versions.outputs.max_version }}
+          python-version: ${{ env.PYTHON_VERSION }}
 
       - name: Ruff format check
         run: uv run ruff format --check .
 
   pyright:
-    needs: get-python-versions
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
@@ -68,17 +54,18 @@ jobs:
       - name: Setup uv
         uses: ./.github/actions/setup-uv
         with:
-          python-version: ${{ needs.get-python-versions.outputs.max_version }}
+          python-version: ${{ env.PYTHON_VERSION }}
 
       - name: Pyright type check
         run: uv run pyright
 
   pytest:
-    needs: get-python-versions
     runs-on: ubuntu-latest
     strategy:
       fail-fast: false
-      matrix: ${{ fromJson(needs.get-python-versions.outputs.matrix) }}
+      matrix:
+        # Keep in sync with requires-python in pyproject.toml.
+        python-version: ["3.10", "3.11", "3.12", "3.13"]
     steps:
       - name: Checkout
         uses: actions/checkout@v4

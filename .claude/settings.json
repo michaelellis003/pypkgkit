@@ -15,7 +15,7 @@
       "Read(tests/**)",
       "Read(pyproject.toml)",
       "Read(.pre-commit-config.yaml)",
-      "Read(.python-versions)"
+      "Read(.github/workflows/ci.yml)"
     ],
     "deny": [
       "Bash(rm -rf *)",
