@@ -31,7 +31,7 @@ if echo "$COMMAND" | grep -qE '^git push'; then
     fi
 
     # Run tests
-    if ! uv run pytest -x --tb=short -q 2>/dev/null; then
+    if ! uv run pytest -x --tb=short -q --cov 2>/dev/null; then
         echo "BLOCKED: Tests are failing. Fix failing tests before pushing." >&2
         exit 2
     fi

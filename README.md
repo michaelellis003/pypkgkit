@@ -204,6 +204,7 @@ Runs parallel jobs for fast feedback:
 - **Coverage** — enforces minimum code coverage (`fail_under` in `pyproject.toml`) and uploads to Codecov
 - **Pytest macOS** — smoke test on macOS to catch platform-specific issues
 - **Pytest Windows** — smoke test on Windows to catch platform-specific issues
+- **CI Pass** — gate job that requires all of the above to succeed; this is the single check referenced by branch protection
 
 ### On Merge to Main (`release.yml`)
 
@@ -211,6 +212,14 @@ Runs parallel jobs for fast feedback:
 - **Tagging** — creates a git tag for the new version
 - **Building** — runs `uv build` to produce sdist and wheel
 - **Releasing** — creates a GitHub Release with the built artifacts and release notes
+
+### Publishing to PyPI
+
+The release workflow includes a commented-out step for publishing to PyPI using [trusted publishing (OIDC)](https://docs.pypi.org/trusted-publishers/). To enable it:
+
+1. Create a [PyPI](https://pypi.org) account if you don't have one.
+2. In your PyPI project settings, add a trusted publisher for this repository (owner, repo name, workflow: `release.yml`).
+3. Uncomment the `Publish to PyPI` step in `.github/workflows/release.yml`.
 
 ## Project Structure
 
@@ -227,6 +236,7 @@ Runs parallel jobs for fast feedback:
 │   └── test_main_module.py         # Tests for __main__.py entry point
 ├── .github/
 │   ├── actions/setup-uv/           # Reusable CI composite action
+│   ├── CODEOWNERS                  # Default code ownership for reviews
 │   ├── dependabot.yml              # Automated dependency updates
 │   ├── ISSUE_TEMPLATE/             # Bug report & feature request forms
 │   ├── PULL_REQUEST_TEMPLATE.md    # PR checklist template
