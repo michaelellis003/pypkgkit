@@ -33,6 +33,23 @@ error() { printf "${RED}error:${NC} %s\n" "$*" >&2; }
 to_snake() { echo "$1" | tr '-' '_'; }
 to_kebab() { echo "$1" | tr '_' '-'; }
 
+# Cross-platform in-place sed (BSD sed on macOS requires -i '')
+sedi() {
+    if [[ "$OSTYPE" == "darwin"* ]]; then
+        sed -i '' "$@"
+    else
+        sed -i "$@"
+    fi
+}
+
+# Replace a sed pattern across all tracked project files
+replace_all() {
+    local pattern="$1"
+    while IFS= read -r file; do
+        sedi "$pattern" "$file" 2>/dev/null || true
+    done <<< "$FILES_TO_UPDATE"
+}
+
 # Validate a package name: lowercase, starts with letter, only [a-z0-9-_]
 validate_name() {
     local name="$1"
@@ -163,9 +180,13 @@ info "Updating package name references..."
 # Order matters: replace the longer/more specific patterns first
 # so shorter patterns don't break longer matches.
 
-# Files to update (excludes .git, uv.lock, CHANGELOG.md, and this script)
+# Files to update (excludes .git, caches, venv, lockfile, and this script)
 FILES_TO_UPDATE=$(find . \
     -not -path './.git/*' \
+    -not -path './.venv/*' \
+    -not -path './.ruff_cache/*' \
+    -not -path './.pytest_cache/*' \
+    -not -path './*__pycache__*' \
     -not -path './uv.lock' \
     -not -path './CHANGELOG.md' \
     -not -name 'init.sh' \
@@ -173,22 +194,22 @@ FILES_TO_UPDATE=$(find . \
     -print)
 
 # --- GitHub URLs (most specific — must run before generic name replacement) ---
-echo "$FILES_TO_UPDATE" | xargs sed -i "s|michaelellis003/python-package-template|${GITHUB_REPO}|g" 2>/dev/null || true
-echo "$FILES_TO_UPDATE" | xargs sed -i "s|michaelellis003/uv-python-template|${GITHUB_REPO}|g" 2>/dev/null || true
+replace_all "s|michaelellis003/python-package-template|${GITHUB_REPO}|g"
+replace_all "s|michaelellis003/uv-python-template|${GITHUB_REPO}|g"
 
 # --- Author information ---
-sed -i "s/name = \"Michael Ellis\"/name = \"${AUTHOR_NAME}\"/" pyproject.toml
-sed -i "s|email = \"michaelellis003@gmail.com\"|email = \"${AUTHOR_EMAIL}\"|" pyproject.toml
+sedi "s/name = \"Michael Ellis\"/name = \"${AUTHOR_NAME}\"/" pyproject.toml
+sedi "s|email = \"michaelellis003@gmail.com\"|email = \"${AUTHOR_EMAIL}\"|" pyproject.toml
 
 # --- Package name (generic replacements last) ---
 # Replace python_package_template (snake_case — directory and import name)
-echo "$FILES_TO_UPDATE" | xargs sed -i "s/python_package_template/${SNAKE_NAME}/g" 2>/dev/null || true
+replace_all "s/python_package_template/${SNAKE_NAME}/g"
 
 # Replace python-package-template (kebab-case — pypi/metadata name)
-echo "$FILES_TO_UPDATE" | xargs sed -i "s/python-package-template/${KEBAB_NAME}/g" 2>/dev/null || true
+replace_all "s/python-package-template/${KEBAB_NAME}/g"
 
 # Replace Python Package Template (title case — README heading etc.)
-echo "$FILES_TO_UPDATE" | xargs sed -i "s/Python Package Template/${KEBAB_NAME}/g" 2>/dev/null || true
+replace_all "s/Python Package Template/${KEBAB_NAME}/g"
 
 # ---------------------------------------------------------------------------
 # 3. Update project description
@@ -196,7 +217,7 @@ echo "$FILES_TO_UPDATE" | xargs sed -i "s/Python Package Template/${KEBAB_NAME}/
 
 info "Updating project description..."
 
-sed -i "s|A production-ready template for starting new Python packages\.|${DESCRIPTION}|" pyproject.toml
+sedi "s|A production-ready template for starting new Python packages\.|${DESCRIPTION}|" pyproject.toml
 
 # ---------------------------------------------------------------------------
 # 4. Update README badges (remove codecov badge, update license badge)
@@ -205,12 +226,12 @@ sed -i "s|A production-ready template for starting new Python packages\.|${DESCR
 info "Updating README badges..."
 
 # Remove the codecov badge line (user will add their own when they set up codecov)
-sed -i '/codecov\.io/d' README.md
+sedi '/codecov\.io/d' README.md
 
 # The license badge URL was already updated by the GitHub URL replacement above
 
 # Update the README description line
-sed -i "s|A production-ready template for starting new Python packages\. Clone it, rename a few things, and start building — dependency management, linting, type checking, testing, and CI/CD are already wired up\.|${DESCRIPTION}|" README.md
+sedi "s|A production-ready template for starting new Python packages\. Clone it, rename a few things, and start building — dependency management, linting, type checking, testing, and CI/CD are already wired up\.|${DESCRIPTION}|" README.md
 
 # ---------------------------------------------------------------------------
 # 5. Update keywords
@@ -218,7 +239,7 @@ sed -i "s|A production-ready template for starting new Python packages\. Clone i
 
 info "Updating keywords..."
 
-sed -i 's/keywords = \["template", "python", "uv", "ruff", "pyright"\]/keywords = []/' pyproject.toml
+sedi 's/keywords = \["template", "python", "uv", "ruff", "pyright"\]/keywords = []/' pyproject.toml
 
 # ---------------------------------------------------------------------------
 # 6. Reset version and changelog
@@ -226,7 +247,7 @@ sed -i 's/keywords = \["template", "python", "uv", "ruff", "pyright"\]/keywords 
 
 info "Resetting version to 0.1.0..."
 
-sed -i 's/^version = ".*"/version = "0.1.0"/' pyproject.toml
+sedi 's/^version = ".*"/version = "0.1.0"/' pyproject.toml
 
 info "Resetting CHANGELOG.md..."
 
@@ -242,23 +263,73 @@ CHANGELOG_EOF
 
 info "Cleaning up TODO comments..."
 
-sed -i '/# TODO: Update the --upgrade-package/d' pyproject.toml
+sedi '/# TODO: Update the --upgrade-package/d' pyproject.toml
 
 # ---------------------------------------------------------------------------
-# 8. Update the README "Customizing the Template" section
+# 8. Update README structure and hints
 # ---------------------------------------------------------------------------
 
-info "Updating README template instructions..."
-
-# Replace "my-project" in the clone command (URL was already updated above)
-sed -i "s|\.git my-project|.git ${KEBAB_NAME}|" README.md
+info "Updating README..."
 
 # Update project structure section — remove "(rename this)" hint
 # (package name was already updated by the global replacement above)
-sed -i "s|# Package source (rename this)|# Package source|" README.md
+sedi "s|# Package source (rename this)|# Package source|" README.md
 
 # ---------------------------------------------------------------------------
-# 9. Regenerate the lockfile
+# 9. Strip template-only content from README
+# ---------------------------------------------------------------------------
+
+info "Stripping template-only sections from README..."
+
+# Replace the template-specific Getting Started + Customizing sections
+# (enclosed in TEMPLATE-ONLY markers) with a project-appropriate version.
+awk -v repo="${GITHUB_REPO}" -v name="${KEBAB_NAME}" '
+/<!-- TEMPLATE-ONLY-START -->/ {
+    skip = 1
+    print "## Getting Started"
+    print ""
+    print "### Prerequisites"
+    print "- Python 3.10+"
+    print "- [uv](https://docs.astral.sh/uv/getting-started/installation/)"
+    print ""
+    print "### Installation"
+    print ""
+    print "```bash"
+    printf "git clone https://github.com/%s.git\n", repo
+    printf "cd %s\n", name
+    print "uv sync"
+    print "```"
+    print ""
+    print "### Running Tests"
+    print ""
+    print "```bash"
+    print "uv run pytest -v --cov"
+    print "```"
+    print ""
+    print "### Pre-commit Hooks"
+    print ""
+    print "```bash"
+    print "uv run pre-commit install"
+    print "```"
+    next
+}
+/<!-- TEMPLATE-ONLY-END -->/ { skip = 0; next }
+!skip { print }
+' README.md > README.md.tmp && mv README.md.tmp README.md
+
+# Remove "Customizing the Template" from Table of Contents
+sedi '/Customizing the Template/d' README.md
+
+# Renumber the Table of Contents entries
+awk '/^[0-9]+\. \[/ { n++; sub(/^[0-9]+/, n) } { print }' \
+    README.md > README.md.tmp && mv README.md.tmp README.md
+
+# Remove init.sh from project structure diagrams
+sedi '/init\.sh.*Interactive template/d' README.md
+sedi '/init\.sh.*Interactive project/d' CLAUDE.md
+
+# ---------------------------------------------------------------------------
+# 10. Regenerate the lockfile
 # ---------------------------------------------------------------------------
 
 info "Regenerating uv.lock..."
@@ -271,7 +342,14 @@ else
 fi
 
 # ---------------------------------------------------------------------------
-# 10. Summary
+# 11. Self-cleanup
+# ---------------------------------------------------------------------------
+
+info "Removing init script (no longer needed)..."
+rm -f -- "$0"
+
+# ---------------------------------------------------------------------------
+# 12. Summary
 # ---------------------------------------------------------------------------
 
 echo ""
@@ -290,7 +368,4 @@ echo "  4. Enable pre-commit:   uv run pre-commit install"
 echo "  5. Replace the demo code in ${SNAKE_NAME}/main.py"
 echo "  6. Set up Codecov and add the badge to README.md"
 echo "  7. Push and run:        ./scripts/setup-repo.sh"
-echo ""
-echo "You can safely delete this script after initialization:"
-echo "  rm scripts/init.sh"
 echo ""
