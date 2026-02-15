@@ -85,6 +85,19 @@ BREAKING CHANGE: X-API-Key header no longer accepted.
 - Each commit must compile and pass tests
 - Stage intentionally — use specific files, not `git add .`
 
+## Documentation Updates
+
+Before pushing, review whether documentation needs updating:
+
+- New public function/class → add Google-style docstring
+- Changed behavior or API → update README usage section
+- Added/removed files or commands → update CLAUDE.md structure
+- Changed setup or dependencies → update README getting started
+
+Use `docs(<scope>): <description>` commits for documentation-only
+changes. If docs are part of a feature, include them in the
+`feat` commit.
+
 ## Push Frequency
 
 - Push every 3-5 commits or at end of session

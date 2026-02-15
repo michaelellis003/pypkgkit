@@ -32,6 +32,23 @@ Follow this progression for each unit of work:
 
 Each commit should represent one coherent, passing behavior.
 
+## Documentation
+
+After all TDD cycles for a unit of work are complete, update
+documentation to reflect any user-facing changes:
+
+- **Docstrings** — ensure new/changed functions have accurate
+  Google-style docstrings with `Args` and `Returns` sections.
+- **README.md** — update if the change affects setup, usage, or
+  the public API.
+- **CLAUDE.md** — update the repository structure or quick reference
+  if files were added/removed or commands changed.
+
+Documentation updates use the `docs` commit type:
+```
+docs(readme): add usage example for new endpoint
+```
+
 ## Verification Before Moving On
 
 After completing a TDD cycle, ALWAYS run:
