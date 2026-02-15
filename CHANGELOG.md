@@ -2,6 +2,14 @@
 
 <!-- version list -->
 
+## v1.0.1 (2026-02-15)
+
+### Bug Fixes
+
+- **ci**: Add ruff as dev dependency for direct CI invocation
+  ([`9897e0a`](https://github.com/michaelellis003/uv-python-template/commit/9897e0a33df54ba127cb9cefe8a6dd0f103efe33))
+
+
 ## v1.0.0 (2026-02-15)
 
 ### Bug Fixes
