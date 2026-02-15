@@ -11,12 +11,14 @@ repos:
       - id: detect-private-key
       - id: end-of-file-fixer
       - id: trailing-whitespace
+  # Keep rev in sync with ruff version in pyproject.toml [dependency-groups].
   - repo: https://github.com/astral-sh/ruff-pre-commit
     rev: v0.9.7
     hooks:
       - id: ruff
         args: [ --fix ]
       - id: ruff-format
+  # Keep rev in sync with pyright version in pyproject.toml [dependency-groups].
   - repo: https://github.com/RobertCraigie/pyright-python
     rev: v1.1.394
     hooks:

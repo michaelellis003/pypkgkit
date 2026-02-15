@@ -17,11 +17,26 @@ All code MUST conform to these standards enforced by Ruff and Pyright.
 
 ## Linting (Ruff)
 
-Enabled rules: pyflakes (F), pycodestyle (E4/E7/E9/E501),
-pep8-naming (N), pydocstyle (D), pyupgrade (UP),
-flake8-bugbear (B), flake8-simplify (SIM), isort (I).
+Enabled rules (see `pyproject.toml [tool.ruff.lint]` for canonical list):
 
-Tests (`tests/*`) are exempt from E501 (line length).
+- **F** — pyflakes
+- **E, W** — pycodestyle (errors and warnings)
+- **N** — pep8-naming
+- **D** — pydocstyle
+- **UP** — pyupgrade
+- **B** — flake8-bugbear
+- **SIM** — flake8-simplify
+- **I** — isort
+- **C4** — flake8-comprehensions
+- **C90** — mccabe complexity (max 10)
+- **T20** — flake8-print (no print statements)
+- **S** — flake8-bandit (security)
+- **PT** — flake8-pytest-style
+- **PLR** — Pylint refactoring rules
+- **RUF** — Ruff-specific rules
+
+Tests (`tests/*`) are exempt from docstrings (D), assert warnings
+(S101), and magic value checks (PLR2004).
 
 ## Docstrings
 
