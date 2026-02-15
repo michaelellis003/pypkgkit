@@ -2,6 +2,14 @@
 
 <!-- version list -->
 
+## v1.4.1 (2026-02-15)
+
+### Bug Fixes
+
+- **template**: Correct URLs, docs, and hook matching
+  ([`4c4d91f`](https://github.com/michaelellis003/uv-python-template/commit/4c4d91ffc81ae84d7f84a8fbd2b7d111518185e2))
+
+
 ## v1.4.0 (2026-02-15)
 
 ### Features
