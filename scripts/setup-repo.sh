@@ -65,14 +65,7 @@ gh api "repos/${REPO}/branches/main/protection" \
   "required_status_checks": {
     "strict": true,
     "checks": [
-      { "context": "ruff-lint" },
-      { "context": "ruff-format" },
-      { "context": "pyright" },
-      { "context": "coverage" },
-      { "context": "pytest (3.10)" },
-      { "context": "pytest (3.11)" },
-      { "context": "pytest (3.12)" },
-      { "context": "pytest (3.13)" }
+      { "context": "ci-pass" }
     ]
   },
   "enforce_admins": true,
@@ -83,12 +76,8 @@ EOF
 
 echo "Done. Branch protection enabled on main."
 echo ""
-echo "Required status checks:"
-echo "  - ruff-lint"
-echo "  - ruff-format"
-echo "  - pyright"
-echo "  - coverage (fail_under from pyproject.toml)"
-echo "  - pytest (3.10, 3.11, 3.12, 3.13)"
+echo "Required status check:"
+echo "  - ci-pass (gate job that requires all CI jobs to succeed)"
 if [[ "$REQUIRED_REVIEWS" -gt 0 ]]; then
     echo ""
     echo "Required PR approvals: $REQUIRED_REVIEWS"
@@ -98,5 +87,5 @@ else
     echo "  To require reviews: ./scripts/setup-repo.sh --require-reviews 1"
 fi
 echo ""
-echo "Note: if you change the Python version matrix in ci.yml,"
-echo "update the pytest checks above to match."
+echo "Note: ci-pass depends on all CI jobs, so adding or removing jobs"
+echo "in ci.yml only requires updating the ci-pass 'needs' list."

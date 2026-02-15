@@ -137,13 +137,18 @@ docstring-code-line-length = "dynamic"
 [tool.pyright]
 venvPath = "."
 venv = ".venv"
-typeCheckingMode = "basic"
+typeCheckingMode = "standard"
 exclude = [".venv"]
 
 [tool.pytest.ini_options]
 addopts = ["-ra", "--strict-markers", "--strict-config"]
 xfail_strict = true
 testpaths = ["tests"]
+markers = [
+    "unit: fast, isolated unit tests",
+    "integration: tests that touch external systems",
+    "slow: long-running tests",
+]
 
 [tool.coverage.run]
 source = ["python_package_template"]

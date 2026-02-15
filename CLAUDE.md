@@ -31,6 +31,7 @@ tests/
   test_main_module.py           # Tests for __main__.py entry point
 .github/
   actions/setup-uv/            # Reusable CI composite action
+  CODEOWNERS                   # Default code ownership for reviews
   dependabot.yml               # Automated dependency updates
   ISSUE_TEMPLATE/              # Bug report & feature request forms
   PULL_REQUEST_TEMPLATE.md     # PR checklist template

@@ -12,13 +12,15 @@ concurrency:
   group: ${{ github.workflow }}-${{ github.head_ref || github.ref }}
   cancel-in-progress: true
 
-# Tested Python versions. Keep in sync with requires-python in pyproject.toml.
+# Python version sync: keep env.PYTHON_VERSION, matrix.python-version,
+# and pyproject.toml requires-python + classifiers in sync.
 env:
   PYTHON_VERSION: "3.13"
 
 jobs:
   ruff-lint:
     runs-on: ubuntu-latest
+    timeout-minutes: 10
     steps:
       - name: Checkout
         uses: actions/checkout@v6
@@ -33,6 +35,7 @@ jobs:
 
   ruff-format:
     runs-on: ubuntu-latest
+    timeout-minutes: 10
     steps:
       - name: Checkout
         uses: actions/checkout@v6
@@ -47,6 +50,7 @@ jobs:
 
   pyright:
     runs-on: ubuntu-latest
+    timeout-minutes: 10
     steps:
       - name: Checkout
         uses: actions/checkout@v6
@@ -61,6 +65,7 @@ jobs:
 
   pytest:
     runs-on: ubuntu-latest
+    timeout-minutes: 15
     strategy:
       fail-fast: false
       matrix:
@@ -83,6 +88,7 @@ jobs:
   # in pyproject.toml (currently 80%).
   coverage:
     runs-on: ubuntu-latest
+    timeout-minutes: 15
     steps:
       - name: Checkout
         uses: actions/checkout@v6
@@ -105,6 +111,7 @@ jobs:
   # Smoke tests on macOS and Windows to catch platform-specific issues.
   pytest-macos:
     runs-on: macos-latest
+    timeout-minutes: 15
     steps:
       - name: Checkout
         uses: actions/checkout@v6
@@ -119,6 +126,7 @@ jobs:
 
   pytest-windows:
     runs-on: windows-latest
+    timeout-minutes: 15
     steps:
       - name: Checkout
         uses: actions/checkout@v6
@@ -130,3 +138,17 @@ jobs:
 
       - name: Run tests
         run: uv run pytest -v --durations=0
+
+  # Gate job — single required check for branch protection.
+  ci-pass:
+    if: always()
+    needs: [ruff-lint, ruff-format, pyright, pytest, coverage, pytest-macos, pytest-windows]
+    runs-on: ubuntu-latest
+    timeout-minutes: 1
+    steps:
+      - name: Verify all checks passed
+        run: |
+          if [[ "${{ contains(needs.*.result, 'failure') || contains(needs.*.result, 'cancelled') }}" == "true" ]]; then
+            echo "One or more CI jobs failed or were cancelled."
+            exit 1
+          fi
