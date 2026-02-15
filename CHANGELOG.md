@@ -2,6 +2,46 @@
 
 <!-- version list -->
 
+## v1.1.0 (2026-02-15)
+
+### Chores
+
+- **config**: Improve pyproject.toml metadata and tool settings
+  ([`1e255af`](https://github.com/michaelellis003/uv-python-template/commit/1e255af3552b69c4d692d3fb45b86d2a8fd10dc4))
+
+- **editor**: Add .editorconfig for non-Python files
+  ([`ec0b4d3`](https://github.com/michaelellis003/uv-python-template/commit/ec0b4d35e05a30624e8c0110d13283f1f2093071))
+
+- **pre-commit**: Add standard validation hooks
+  ([`23114e7`](https://github.com/michaelellis003/uv-python-template/commit/23114e74d06c1c2068b0fe886513bacaa3ce7e35))
+
+### Continuous Integration
+
+- **python**: Add Python 3.13 to test matrix
+  ([`b08c77e`](https://github.com/michaelellis003/uv-python-template/commit/b08c77eba9cadbcf7bdde48eb22060de4074248e))
+
+- **python**: Replace .python-versions with hardcoded CI matrix
+  ([`3eadee9`](https://github.com/michaelellis003/uv-python-template/commit/3eadee984a3265b30f127174f7ed780589b577bb))
+
+### Documentation
+
+- **github**: Add issue and PR templates
+  ([`082ab3a`](https://github.com/michaelellis003/uv-python-template/commit/082ab3aea033c3923c74b09d67c1e1f8feec44bd))
+
+- **readme**: Update structure and Python version references
+  ([`5e77612`](https://github.com/michaelellis003/uv-python-template/commit/5e776120f4f9e459c072dca7dd590e341f65984d))
+
+### Features
+
+- **package**: Add py.typed marker and __version__ export
+  ([`0e7859e`](https://github.com/michaelellis003/uv-python-template/commit/0e7859e8a7fc2c80a00ef4f216c2ae67bf6511f7))
+
+### Testing
+
+- **demo**: Rename tests to convention and add boundary cases
+  ([`6ef7e4a`](https://github.com/michaelellis003/uv-python-template/commit/6ef7e4aa58106412601672cb44d284369141b3dd))
+
+
 ## v1.0.1 (2026-02-15)
 
 ### Bug Fixes
