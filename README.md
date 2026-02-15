@@ -1,6 +1,6 @@
 # Python Package Template
 
-[![](https://img.shields.io/badge/Python-3.10|3.11|3.12-blue)](https://www.python.org)
+[![](https://img.shields.io/badge/Python-3.10|3.11|3.12|3.13-blue)](https://www.python.org)
 [![uv](https://img.shields.io/endpoint?url=https://raw.githubusercontent.com/astral-sh/uv/main/assets/badge/v0.json)](https://github.com/astral-sh/uv)
 [![Ruff](https://img.shields.io/endpoint?url=https://raw.githubusercontent.com/astral-sh/ruff/main/assets/badge/v2.json)](https://github.com/astral-sh/ruff)
 [![Pyright](https://img.shields.io/badge/Pyright-enabled-brightgreen)](https://github.com/microsoft/pyright)
@@ -24,7 +24,7 @@ A production-ready template for starting new Python packages. Clone it, rename a
     - [Ruff](https://docs.astral.sh/ruff/) for linting and formatting,
     - [Pyright](https://github.com/microsoft/pyright) for static type checking.
 - [Pytest](https://docs.pytest.org/en/stable/) with [pytest-cov](https://pytest-cov.readthedocs.io/) for testing and coverage.
-- **GitHub Actions** CI/CD — lint, test across Python 3.10–3.12, and auto-release on merge to main.
+- **GitHub Actions** CI/CD — lint, test across Python 3.10–3.13, and auto-release on merge to main.
 - **TDD-first development lifecycle** with Claude Code configuration for AI-assisted development.
 
 ## Getting Started
@@ -155,7 +155,7 @@ Runs four parallel jobs for fast feedback:
 - **Ruff Lint** — checks for code quality issues
 - **Ruff Format** — verifies consistent code formatting
 - **Pyright** — static type checking
-- **Pytest** — runs tests across Python 3.10, 3.11, and 3.12 with Codecov upload
+- **Pytest** — runs tests across Python 3.10, 3.11, 3.12, and 3.13 with Codecov upload
 
 ### On Merge to Main (`release.yml`)
 
@@ -168,12 +168,15 @@ Runs four parallel jobs for fast feedback:
 
 ```
 ├── python_package_template/         # Package source (rename this)
-│   ├── __init__.py                  # Public API exports
-│   └── main.py                     # Core module with demo functions
+│   ├── __init__.py                  # Public API exports + __version__
+│   ├── main.py                     # Core module with demo functions
+│   └── py.typed                    # PEP 561 type checking marker
 ├── tests/
 │   └── test_init.py                # Unit tests
 ├── .github/
 │   ├── actions/setup-uv/           # Reusable CI composite action
+│   ├── ISSUE_TEMPLATE/             # Bug report & feature request forms
+│   ├── PULL_REQUEST_TEMPLATE.md    # PR checklist template
 │   └── workflows/
 │       ├── ci.yml                  # CI: parallel lint, format, typecheck, test matrix
 │       └── release.yml             # Auto-version, tag + GitHub Release on merge
@@ -182,8 +185,9 @@ Runs four parallel jobs for fast feedback:
 │   ├── rules/                      # Development standards
 │   ├── skills/                     # Slash commands (/tdd, /commit, /pr, etc.)
 │   └── agents/                     # Specialized subagents
+├── .editorconfig                   # Editor settings for non-Python files
 ├── pyproject.toml                  # Project config, deps, tool settings
 ├── uv.lock                        # Locked dependency versions
 ├── .pre-commit-config.yaml         # Pre-commit hook definitions
-└── .python-versions                # Supported Python versions
+└── .python-versions                # Supported Python versions (3.10–3.13)
 ```
