@@ -76,7 +76,24 @@ jobs:
           python-version: ${{ matrix.python-version }}
 
       - name: Run tests
-        run: uv run pytest -v --durations=0 --cov --cov-report=xml
+        run: uv run pytest -v --durations=0
+
+  # Dedicated coverage job — shows as its own PR status check.
+  # Enforces the minimum threshold from [tool.coverage.report] fail_under
+  # in pyproject.toml (currently 80%).
+  coverage:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+
+      - name: Setup uv
+        uses: ./.github/actions/setup-uv
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+
+      - name: Run tests with coverage
+        run: uv run pytest --cov --cov-report=term-missing --cov-report=xml
 
       # continue-on-error so CI passes in forks without a CODECOV_TOKEN secret
       - name: Upload Coverage to Codecov
@@ -85,9 +102,23 @@ jobs:
         with:
           token: ${{ secrets.CODECOV_TOKEN }}
 
-  # Smoke test on macOS to catch platform-specific issues.
+  # Smoke tests on macOS and Windows to catch platform-specific issues.
   pytest-macos:
     runs-on: macos-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+
+      - name: Setup uv
+        uses: ./.github/actions/setup-uv
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+
+      - name: Run tests
+        run: uv run pytest -v --durations=0
+
+  pytest-windows:
+    runs-on: windows-latest
     steps:
       - name: Checkout
         uses: actions/checkout@v6
