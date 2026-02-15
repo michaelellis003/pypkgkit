@@ -49,7 +49,6 @@ tests/
 .editorconfig                   # Editor settings for non-Python files
 pyproject.toml                  # Project config, deps, tool settings
 .pre-commit-config.yaml         # Pre-commit hook definitions
-.python-versions                # Supported Python versions (3.10–3.13)
 ```
 
 ## Quick Reference — Development Commands

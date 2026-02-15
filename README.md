@@ -78,7 +78,7 @@ After cloning, update these files to match your project:
 | Test imports | `tests/test_init.py` — update `from python_package_template import ...` |
 | README badges & description | `README.md` — replace repo URLs and badge tokens |
 | License | `LICENSE` — update copyright holder if needed |
-| Python versions | `.python-versions` and `requires-python` in `pyproject.toml` |
+| Python versions | `requires-python` in `pyproject.toml` and matrix in `.github/workflows/ci.yml` |
 | Semantic release package name | `pyproject.toml` — `[tool.semantic_release]` update `--upgrade-package` in `build_command` |
 | Codecov token | Add `CODECOV_TOKEN` secret in your GitHub repo settings |
 
@@ -188,6 +188,5 @@ Runs four parallel jobs for fast feedback:
 ├── .editorconfig                   # Editor settings for non-Python files
 ├── pyproject.toml                  # Project config, deps, tool settings
 ├── uv.lock                        # Locked dependency versions
-├── .pre-commit-config.yaml         # Pre-commit hook definitions
-└── .python-versions                # Supported Python versions (3.10–3.13)
+└── .pre-commit-config.yaml         # Pre-commit hook definitions
 ```
