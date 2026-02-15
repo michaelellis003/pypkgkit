@@ -8,7 +8,13 @@ wheels/
 .pytest_cache
 .ruff_cache
 .coverage
+coverage.xml
 .DS_Store
 
 # Virtual environments
 .venv
+
+# Claude Code local files (personal, not shared)
+CLAUDE.local.md
+.claude/settings.local.json
+.claude/agent-memory-local/
