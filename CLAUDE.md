@@ -9,10 +9,10 @@ Modular rules live in `.claude/rules/` — each covers a specific concern.
 starting new Python packages. Uses uv, Ruff, Pyright, and pre-commit
 hooks. Licensed Apache-2.0.
 
-This is a **template repository**. Users clone it, rename the package
-directory and metadata, then start building. The demo functions
-(`hello`, `add`, `subtract`, `multiply`) are working examples of the
-TDD workflow.
+This is a **template repository**. Users clone it, run
+`./scripts/init.sh` to rename the package and configure metadata,
+then start building. The demo functions (`hello`, `add`, `subtract`,
+`multiply`) are working examples of the TDD workflow.
 
 ## Repository Structure
 
@@ -53,6 +53,7 @@ tests/
     code-reviewer.md            # Code review subagent
     test-writer.md              # Test-first subagent
 scripts/
+  init.sh                        # Interactive project initialization
   setup-repo.sh                  # One-time repo setup (branch protection)
 .editorconfig                   # Editor settings for non-Python files
 .gitignore                      # Git ignore rules
