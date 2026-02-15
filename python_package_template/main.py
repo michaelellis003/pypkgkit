@@ -29,6 +29,19 @@ def add(a: int, b: int) -> int:
     return a + b
 
 
+def subtract(a: int, b: int) -> int:
+    """Subtract one integer from another.
+
+    Args:
+        a (int): The integer to subtract from.
+        b (int): The integer to subtract.
+
+    Returns:
+        int: The difference of the two integers.
+    """
+    return a - b
+
+
 def multiply(a: float, b: int) -> float:
     """Multiply a float by an integer.
 
