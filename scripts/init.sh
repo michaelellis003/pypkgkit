@@ -501,17 +501,23 @@ sedi "s|# Package source (rename this)|# Package source|" README.md
 # 9. Generate license files and apply headers
 # ---------------------------------------------------------------------------
 
+VALIDATION_OK=true
+
 if [[ "$LICENSE_KEY_LOWER" != "none" ]]; then
     info "Setting up license (${LICENSE_SPDX})..."
 
     # Fetch and write the LICENSE file
     LICENSE_BODY=$(fetch_license_body "$LICENSE_KEY" "$AUTHOR_NAME" "$CURRENT_YEAR")
     if [[ -n "$LICENSE_BODY" ]]; then
-        echo "$LICENSE_BODY" > LICENSE
+        printf '%s\n' "$LICENSE_BODY" > LICENSE
         ok "LICENSE file updated."
+    else
+        warn "Could not fetch license text. LICENSE file still contains Apache-2.0."
+        warn "Replace the LICENSE file manually with your ${LICENSE_SPDX} license text."
+        VALIDATION_OK=false
     fi
 
-    # Update pyproject.toml license field
+    # Update pyproject.toml license field (always — user explicitly chose this license)
     sedi "s|license = {text = \"Apache-2.0\"}|license = {text = \"${LICENSE_SPDX}\"}|" pyproject.toml
 
     # Update license trove classifier (PEP 639 license field is authoritative,
@@ -536,6 +542,10 @@ print(classifier_map.get('${LICENSE_SPDX}', ''))
 ")
     if [[ -n "$LICENSE_CLASSIFIER" ]]; then
         sedi "s|License :: OSI Approved :: Apache Software License|${LICENSE_CLASSIFIER}|" pyproject.toml
+    else
+        # No known classifier — remove the stale Apache one
+        sedi "/License :: OSI Approved :: Apache Software License/d" pyproject.toml
+        warn "No trove classifier mapping for ${LICENSE_SPDX}. Removed stale Apache classifier."
     fi
 
     # Update conda-forge recipe license field
@@ -567,10 +577,16 @@ hook_block = '''  - repo: https://github.com/Lucas-C/pre-commit-hooks
 '''
 # Insert before the ruff-pre-commit block
 marker = '  # Keep rev in sync with ruff version'
+if marker not in content:
+    print('Marker not found in .pre-commit-config.yaml', file=sys.stderr)
+    sys.exit(1)
 content = content.replace(marker, hook_block + marker)
 open('.pre-commit-config.yaml', 'w').write(content)
-"
-    ok "insert-license pre-commit hook added."
+" && ok "insert-license pre-commit hook added." || {
+        warn "Could not add insert-license hook to .pre-commit-config.yaml."
+        warn "Add it manually. See https://github.com/Lucas-C/pre-commit-hooks"
+        VALIDATION_OK=false
+    }
 
     # Apply SPDX headers to all .py files
     info "Applying license headers to .py files..."
@@ -729,8 +745,12 @@ fi
 info "Regenerating uv.lock..."
 
 if command -v uv &>/dev/null; then
-    uv lock 2>/dev/null
-    ok "uv.lock regenerated."
+    if uv lock 2>/dev/null; then
+        ok "uv.lock regenerated."
+    else
+        warn "uv lock failed. Run 'uv lock' manually to diagnose."
+        VALIDATION_OK=false
+    fi
 else
     warn "uv not found. Run 'uv lock' manually after installing uv."
 fi
@@ -740,7 +760,6 @@ fi
 # ---------------------------------------------------------------------------
 
 info "Validating initialized project..."
-VALIDATION_OK=true
 
 # Verify the renamed package can be imported
 if command -v uv &>/dev/null; then
