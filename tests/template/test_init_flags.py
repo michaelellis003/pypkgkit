@@ -271,3 +271,93 @@ def test_init_description_whitespace_trimmed(
     assert 'My awesome package' in pyproject
     # Verify leading/trailing spaces were stripped
     assert '  My awesome package  ' not in pyproject
+
+
+@pytest.mark.integration
+@pytest.mark.slow
+def test_init_description_with_double_quotes_produces_valid_toml(
+    tmp_path: Path,
+    template_dir: Path,
+):
+    """Test that description with double quotes is TOML-escaped."""
+    project, init_script = _setup_project(tmp_path, template_dir)
+
+    result = subprocess.run(
+        [
+            str(init_script),
+            '--name',
+            'test-pkg',
+            '--author',
+            'Test Author',
+            '--email',
+            'test@example.com',
+            '--github-owner',
+            'testowner',
+            '--description',
+            'A toolkit for "smart" parsing',
+            '--license',
+            'mit',
+        ],
+        cwd=str(project),
+        input='n\ny\n',
+        capture_output=True,
+        text=True,
+        timeout=30,
+    )
+
+    assert result.returncode == 0, (
+        f'init.sh failed (rc={result.returncode})\n'
+        f'STDOUT:\n{result.stdout}\n'
+        f'STDERR:\n{result.stderr}'
+    )
+
+    pyproject = (project / 'pyproject.toml').read_text()
+    assert r'\"smart\"' in pyproject, (
+        f'Expected escaped quotes in pyproject.toml.\n'
+        f'pyproject.toml content:\n{pyproject}'
+    )
+
+
+@pytest.mark.integration
+@pytest.mark.slow
+def test_init_description_with_backslash_produces_valid_toml(
+    tmp_path: Path,
+    template_dir: Path,
+):
+    """Test that description with backslash is TOML-escaped."""
+    project, init_script = _setup_project(tmp_path, template_dir)
+
+    result = subprocess.run(
+        [
+            str(init_script),
+            '--name',
+            'test-pkg',
+            '--author',
+            'Test Author',
+            '--email',
+            'test@example.com',
+            '--github-owner',
+            'testowner',
+            '--description',
+            'Supports C:\\new stuff',
+            '--license',
+            'mit',
+        ],
+        cwd=str(project),
+        input='n\ny\n',
+        capture_output=True,
+        text=True,
+        timeout=30,
+    )
+
+    assert result.returncode == 0, (
+        f'init.sh failed (rc={result.returncode})\n'
+        f'STDOUT:\n{result.stdout}\n'
+        f'STDERR:\n{result.stderr}'
+    )
+
+    pyproject = (project / 'pyproject.toml').read_text()
+    assert 'C:\\\\new' in pyproject, (
+        f'Expected escaped backslash in pyproject.toml.\n'
+        f'pyproject.toml content:\n{pyproject}'
+    )

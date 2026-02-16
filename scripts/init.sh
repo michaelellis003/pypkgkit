@@ -81,6 +81,10 @@ escape_sed_replacement() {
     printf '%s' "$1" | sed -e 's/[\\|&]/\\&/g'
 }
 
+escape_toml_string() {
+    printf '%s' "$1" | sed -e 's/\\/\\\\/g' -e 's/"/\\"/g'
+}
+
 # Cross-platform in-place sed (BSD sed on macOS requires -i '')
 sedi() {
     if [[ "$OSTYPE" == "darwin"* ]]; then
@@ -365,6 +369,7 @@ fi
 
 # Escape description for use in sed replacements
 DESCRIPTION_SED=$(escape_sed_replacement "$DESCRIPTION")
+DESCRIPTION_TOML_SED=$(escape_sed_replacement "$(escape_toml_string "$DESCRIPTION")")
 
 # PyPI publishing
 if [[ -z "$ENABLE_PYPI" ]]; then
@@ -528,8 +533,10 @@ replace_all "s|michaelellis003/uv-python-template|${GITHUB_REPO}|g"
 # --- Author information ---
 AUTHOR_NAME_SED=$(escape_sed_replacement "$AUTHOR_NAME")
 AUTHOR_EMAIL_SED=$(escape_sed_replacement "$AUTHOR_EMAIL")
-sedi "s|name = \"Michael Ellis\"|name = \"${AUTHOR_NAME_SED}\"|" pyproject.toml
-sedi "s|email = \"michaelellis003@gmail.com\"|email = \"${AUTHOR_EMAIL_SED}\"|" pyproject.toml
+AUTHOR_NAME_TOML_SED=$(escape_sed_replacement "$(escape_toml_string "$AUTHOR_NAME")")
+AUTHOR_EMAIL_TOML_SED=$(escape_sed_replacement "$(escape_toml_string "$AUTHOR_EMAIL")")
+sedi "s|name = \"Michael Ellis\"|name = \"${AUTHOR_NAME_TOML_SED}\"|" pyproject.toml
+sedi "s|email = \"michaelellis003@gmail.com\"|email = \"${AUTHOR_EMAIL_TOML_SED}\"|" pyproject.toml
 
 # --- CODEOWNERS ---
 sedi "s|@michaelellis003|@${GITHUB_OWNER}|g" .github/CODEOWNERS
@@ -553,7 +560,7 @@ replace_all "s/Python Package Template/${TITLE_NAME}/g"
 
 info "Updating project description..."
 
-sedi "s|A production-ready template for starting new Python packages\.|${DESCRIPTION_SED}|" pyproject.toml
+sedi "s|A production-ready template for starting new Python packages\.|${DESCRIPTION_TOML_SED}|" pyproject.toml
 
 # Update conda-forge recipe metadata
 if [[ -f recipe/meta.yaml ]]; then
@@ -818,6 +825,9 @@ sedi '/init\.sh.*Interactive project/d' CLAUDE.md
 sedi "s|run \`init.sh\` with \`--pypi\`, or manually|manually|" docs/publishing.md
 sedi "s|has been updated by \`init.sh\` with|contains|" docs/publishing.md
 
+# Remove init.sh reference from release.yml comment
+sedi "s|Run init.sh with --pypi, or uncomment|Uncomment|" .github/workflows/release.yml
+
 # Remove init.sh reference from README publishing section
 sedi "s|Run \`\./scripts/init\.sh --pypi\` to enable publishing (or uncomment|Uncomment|" README.md
 sedi "s|the \`PYPI-START\`/\`PYPI-END\` block in \`release\.yml\` manually)\.|the \`PYPI-START\`/\`PYPI-END\` block in \`release.yml\`.|" README.md
@@ -853,6 +863,7 @@ if [[ "$PYPI_ENABLED" == "yes" ]]; then
         awk '
         /# PYPI-START/ { in_block = 1; next }
         /# PYPI-END/   { in_block = 0; next }
+        in_block && /^      #$/ { next }
         in_block && /^      # / { sub(/^      # /, "      "); print; next }
         { print }
         ' "$workflow" > "${workflow}.tmp" && mv "${workflow}.tmp" "$workflow"
