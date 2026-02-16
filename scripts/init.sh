@@ -949,6 +949,9 @@ if [[ -d "tests/e2e" ]]; then
     sedi '/\.dockerignore.*# Docker build/d' CLAUDE.md
     sedi '/run-e2e\.sh/d' CLAUDE.md
 
+    # Remove E2E section from README.md (from header to next ### heading)
+    awk '/^### On Push to Main and Pull Request.*e2e/{skip=1; next} /^###/{skip=0} !skip{print}' README.md > README.md.tmp && mv README.md.tmp README.md
+
     ok "E2E test suite removed."
 fi
 
