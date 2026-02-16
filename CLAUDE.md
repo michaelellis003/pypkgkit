@@ -32,6 +32,7 @@ tests/
 docs/
   index.md                     # Documentation landing page
   api.md                       # Auto-generated API reference
+  publishing.md                # PyPI, TestPyPI, and conda-forge guide
 .github/
   actions/setup-uv/            # Reusable CI composite action
   CODEOWNERS                   # Default code ownership for reviews
@@ -42,7 +43,8 @@ docs/
     ci.yml                      # CI: parallel lint, format, typecheck, test matrix
     dependabot-auto-merge.yml   # Auto-merge minor/patch Dependabot PRs
     docs.yml                    # Docs: build and deploy to GitHub Pages
-    release.yml                 # Release: gated on CI, auto-version on merge to main
+    release.yml                 # Release: gated on CI, auto-version + PyPI publish
+    test-publish.yml            # Manual TestPyPI publishing
 .claude/
   settings.json                 # Claude Code project settings and hooks
   rules/                        # Modular instructions by topic
@@ -65,6 +67,8 @@ docs/
   hooks/                          # Tool-use hooks
     protect-files.sh              # Block edits to protected files
     pre-push-check.sh            # Lint + typecheck + test before push
+recipe/
+  meta.yaml                      # conda-forge recipe skeleton
 scripts/
   init.sh                        # Interactive project initialization
   setup-repo.sh                  # One-time repo setup (branch protection)
@@ -112,8 +116,8 @@ This project follows a strict TDD-first workflow. See
 10. PR — self-review, open PR, request review
 11. CI — parallel: ruff lint, ruff format, pyright, test matrix
 12. MERGE — squash and merge to main
-13. RELEASE — `python-semantic-release` auto-bumps version, tags, and
-   creates a GitHub Release based on conventional commit messages
+13. RELEASE — `python-semantic-release` auto-bumps version, tags,
+   creates a GitHub Release, and publishes to PyPI (if enabled)
 
 ## Key Rules
 

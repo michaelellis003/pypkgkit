@@ -30,6 +30,7 @@ plugins:
 nav:
   - Home: index.md
   - API Reference: api.md
+  - Publishing: publishing.md
 
 markdown_extensions:
   - admonition
