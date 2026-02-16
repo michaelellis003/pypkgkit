@@ -2,6 +2,36 @@
 
 <!-- version list -->
 
+## v1.6.0 (2026-02-16)
+
+### Bug Fixes
+
+- **ci**: Skip integration tests on macOS/Windows, fix build pip install
+  ([`6c8dcc8`](https://github.com/michaelellis003/uv-python-template/commit/6c8dcc8f767ac729c69b7ac08efdbe738164185c))
+
+- **init**: Update meta.yaml license, validation message, and python3 check
+  ([`d33aa61`](https://github.com/michaelellis003/uv-python-template/commit/d33aa61656e78b4b4cfb9328ab854ebab65f2372))
+
+- **pre-commit**: Exclude recipe/meta.yaml from check-yaml hook
+  ([`47a9811`](https://github.com/michaelellis003/uv-python-template/commit/47a981179fefe6bc6a3d033b1ac9ef97f92ffbd2))
+
+### Documentation
+
+- **readme**: Add GitHub Pages setup instructions
+  ([`627d4f3`](https://github.com/michaelellis003/uv-python-template/commit/627d4f38dfda729ca2da1fe7d1dcdc06c9fc3d7d))
+
+### Features
+
+- **init**: Add post-init validation, lock-check CI job, and UX improvements
+  ([`4e6a244`](https://github.com/michaelellis003/uv-python-template/commit/4e6a24406ceb7e91c75ebbefd944659c0f071cf0))
+
+- **init**: Add template tests, license bug fixes, and config updates
+  ([`323ab87`](https://github.com/michaelellis003/uv-python-template/commit/323ab87a9d0db3a4c65dc0803c519cfb5dec828c))
+
+- **publish**: Add PyPI, TestPyPI, and conda-forge publishing support
+  ([`9d6861c`](https://github.com/michaelellis003/uv-python-template/commit/9d6861ca2f985673968b336391f36571b84283b3))
+
+
 ## v1.5.0 (2026-02-15)
 
 ### Features
