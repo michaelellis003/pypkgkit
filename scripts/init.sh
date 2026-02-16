@@ -591,8 +591,8 @@ VALIDATION_OK=true
 if [[ "$LICENSE_KEY_LOWER" != "none" ]]; then
     info "Setting up license (${LICENSE_SPDX})..."
 
-    # Fetch and write the LICENSE file
-    LICENSE_BODY=$(fetch_license_body "$LICENSE_KEY" "$AUTHOR_NAME" "$CURRENT_YEAR")
+    # Fetch and write the LICENSE file (|| true: API failure is handled below)
+    LICENSE_BODY=$(fetch_license_body "$LICENSE_KEY" "$AUTHOR_NAME" "$CURRENT_YEAR") || true
     if [[ -n "$LICENSE_BODY" ]]; then
         printf '%s\n' "$LICENSE_BODY" > LICENSE
         ok "LICENSE file updated."

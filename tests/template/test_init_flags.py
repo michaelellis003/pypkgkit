@@ -252,7 +252,7 @@ def test_init_description_whitespace_trimmed(
             '--description',
             '  My awesome package  ',
             '--license',
-            'mit',
+            'none',
         ],
         cwd=str(project),
         input='n\ny\n',
