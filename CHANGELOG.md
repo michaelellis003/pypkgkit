@@ -2,6 +2,23 @@
 
 <!-- version list -->
 
+## v1.7.2 (2026-02-16)
+
+### Bug Fixes
+
+- **init**: Escape author sed, validate inputs, harden CI and release
+  ([`bacc769`](https://github.com/michaelellis003/uv-python-template/commit/bacc769520ac893ae46a2179a6d490a7c6680140))
+
+- **init**: Handle API rate limits and exclude binary files from sed
+  ([`bdf9858`](https://github.com/michaelellis003/uv-python-template/commit/bdf985845d26ec4b2c7406a15504102fe7bacf00))
+
+- **init**: Remove E2E section from README during cleanup
+  ([`709409e`](https://github.com/michaelellis003/uv-python-template/commit/709409e65889ddb0cf37e1e1ddfd32e8ce34bf52))
+
+- **init**: Validate inputs, surface sed errors, harden CI workflows
+  ([`03b35b6`](https://github.com/michaelellis003/uv-python-template/commit/03b35b6e79ef264ecf0c2ad06eb0e9078bf01115))
+
+
 ## v1.7.1 (2026-02-16)
 
 ### Bug Fixes
