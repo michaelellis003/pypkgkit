@@ -528,7 +528,7 @@ replace_all "s|michaelellis003/uv-python-template|${GITHUB_REPO}|g"
 # --- Author information ---
 AUTHOR_NAME_SED=$(escape_sed_replacement "$AUTHOR_NAME")
 AUTHOR_EMAIL_SED=$(escape_sed_replacement "$AUTHOR_EMAIL")
-sedi "s/name = \"Michael Ellis\"/name = \"${AUTHOR_NAME_SED}\"/" pyproject.toml
+sedi "s|name = \"Michael Ellis\"|name = \"${AUTHOR_NAME_SED}\"|" pyproject.toml
 sedi "s|email = \"michaelellis003@gmail.com\"|email = \"${AUTHOR_EMAIL_SED}\"|" pyproject.toml
 
 # --- CODEOWNERS ---
@@ -893,7 +893,8 @@ if command -v uv &>/dev/null; then
 fi
 
 # Check for stale template references in tracked files
-STALE_REFS=$(grep -rl 'python_package_template\|python-package-template' \
+STALE_REFS=$(grep -rl \
+    'python_package_template\|python-package-template\|uv-python-template\|michaelellis003\|Michael Ellis' \
     --include='*.py' --include='*.toml' --include='*.yml' --include='*.yaml' \
     --include='*.md' --include='*.cfg' --include='*.json' --include='*.sh' \
     . 2>/dev/null \
