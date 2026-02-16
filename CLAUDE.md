@@ -33,6 +33,7 @@ tests/
     conftest.py                # Fixtures: template_dir, init_project
     test_template_structure.py  # Verifies template ships clean
     test_init_license.py        # Integration tests for init.sh license setup
+    test_init_flags.py          # Tests for flag validation and special chars
   e2e/                          # Docker-based end-to-end tests
     Dockerfile                  # Parameterized base image (ARG BASE_IMAGE)
     verify-project.sh           # Container-side: init.sh + full verification
