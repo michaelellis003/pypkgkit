@@ -32,6 +32,8 @@ dependencies = [
 Homepage = "https://github.com/michaelellis003/uv-python-template"
 Repository = "https://github.com/michaelellis003/uv-python-template"
 Issues = "https://github.com/michaelellis003/uv-python-template/issues"
+Documentation = "https://michaelellis003.github.io/uv-python-template/"
+Changelog = "https://github.com/michaelellis003/uv-python-template/blob/main/CHANGELOG.md"
 
 [dependency-groups]
 dev = [

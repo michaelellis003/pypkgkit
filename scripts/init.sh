@@ -9,6 +9,7 @@
 #   ./scripts/init.sh --name my-cool-package
 #   ./scripts/init.sh --name my-pkg --author "Jane Smith" --email jane@example.com \
 #                     --github-owner janesmith --description "My awesome package"
+#   ./scripts/init.sh --name my-pkg --pypi     # Enable PyPI publishing
 #
 # Prerequisites:
 #   - uv installed (https://docs.astral.sh/uv/getting-started/installation/)
@@ -91,6 +92,7 @@ AUTHOR_NAME=""
 AUTHOR_EMAIL=""
 GITHUB_OWNER=""
 DESCRIPTION=""
+ENABLE_PYPI=""
 
 while [[ $# -gt 0 ]]; do
     case "$1" in
@@ -114,6 +116,10 @@ while [[ $# -gt 0 ]]; do
             DESCRIPTION="$2"
             shift 2
             ;;
+        --pypi)
+            ENABLE_PYPI="y"
+            shift
+            ;;
         --help|-h)
             echo "Usage: ./scripts/init.sh [OPTIONS]"
             echo ""
@@ -126,6 +132,7 @@ while [[ $# -gt 0 ]]; do
             echo "  --email EMAIL         Author email"
             echo "  --github-owner OWNER  GitHub username or organization"
             echo "  --description TEXT     Short project description"
+            echo "  --pypi                Enable PyPI publishing (uncomments publish steps)"
             echo "  --help, -h            Show this help message"
             exit 0
             ;;
@@ -186,7 +193,18 @@ if [[ -z "$DESCRIPTION" ]]; then
     read -r DESCRIPTION
 fi
 
+# PyPI publishing
+if [[ -z "$ENABLE_PYPI" ]]; then
+    printf "${BOLD}Enable PyPI publishing?${NC} [y/N] "
+    read -r ENABLE_PYPI
+fi
+
 echo ""
+PYPI_ENABLED="no"
+if [[ "${ENABLE_PYPI,,}" == "y" || "${ENABLE_PYPI,,}" == "yes" ]]; then
+    PYPI_ENABLED="yes"
+fi
+
 echo "-----------------------------------------"
 echo "  Package name (kebab):  ${KEBAB_NAME}"
 echo "  Package name (snake):  ${SNAKE_NAME}"
@@ -194,6 +212,7 @@ echo "  Package name (title):  ${TITLE_NAME}"
 echo "  Author:                ${AUTHOR_NAME} <${AUTHOR_EMAIL}>"
 echo "  GitHub repo:           ${GITHUB_REPO}"
 echo "  Description:           ${DESCRIPTION}"
+echo "  PyPI publishing:       ${PYPI_ENABLED}"
 echo "-----------------------------------------"
 echo ""
 printf "Proceed? [Y/n] "
@@ -243,7 +262,7 @@ sedi "s/name = \"Michael Ellis\"/name = \"${AUTHOR_NAME}\"/" pyproject.toml
 sedi "s|email = \"michaelellis003@gmail.com\"|email = \"${AUTHOR_EMAIL}\"|" pyproject.toml
 
 # --- GitHub Pages site URL (must run before generic name replacement) ---
-sedi "s|michaelellis003.github.io/uv-python-template|${GITHUB_OWNER}.github.io/${KEBAB_NAME}|g" mkdocs.yml
+replace_all "s|michaelellis003.github.io/uv-python-template|${GITHUB_OWNER}.github.io/${KEBAB_NAME}|g"
 
 # --- Package name (generic replacements last) ---
 # Replace python_package_template (snake_case — directory and import name)
@@ -262,6 +281,12 @@ replace_all "s/Python Package Template/${TITLE_NAME}/g"
 info "Updating project description..."
 
 sedi "s|A production-ready template for starting new Python packages\.|${DESCRIPTION}|" pyproject.toml
+
+# Update conda-forge recipe metadata
+if [[ -f recipe/meta.yaml ]]; then
+    sedi "s|A production-ready template for starting new Python packages\.|${DESCRIPTION}|" recipe/meta.yaml
+    sedi "s|michaelellis003|${GITHUB_OWNER}|g" recipe/meta.yaml
+fi
 
 # ---------------------------------------------------------------------------
 # 4. Update README badges (remove codecov badge, update license badge)
@@ -381,7 +406,27 @@ awk -v name="${KEBAB_NAME}" -v desc="${DESCRIPTION}" '
 ' CLAUDE.md > CLAUDE.md.tmp && mv CLAUDE.md.tmp CLAUDE.md
 
 # ---------------------------------------------------------------------------
-# 10. Regenerate the lockfile
+# 10. Enable PyPI publishing (if requested)
+# ---------------------------------------------------------------------------
+
+if [[ "$PYPI_ENABLED" == "yes" ]]; then
+    info "Enabling PyPI publishing steps in workflows..."
+
+    # Uncomment the publish steps between PYPI-START and PYPI-END markers
+    for workflow in .github/workflows/release.yml; do
+        awk '
+        /# PYPI-START/ { in_block = 1; next }
+        /# PYPI-END/   { in_block = 0; next }
+        in_block && /^      # / { sub(/^      # /, "      "); print; next }
+        { print }
+        ' "$workflow" > "${workflow}.tmp" && mv "${workflow}.tmp" "$workflow"
+    done
+
+    ok "PyPI publishing enabled in release.yml."
+fi
+
+# ---------------------------------------------------------------------------
+# 11. Regenerate the lockfile
 # ---------------------------------------------------------------------------
 
 info "Regenerating uv.lock..."
@@ -394,14 +439,14 @@ else
 fi
 
 # ---------------------------------------------------------------------------
-# 11. Self-cleanup
+# 12. Self-cleanup
 # ---------------------------------------------------------------------------
 
 info "Removing init script (no longer needed)..."
 rm -f -- "$0"
 
 # ---------------------------------------------------------------------------
-# 12. Summary
+# 13. Summary
 # ---------------------------------------------------------------------------
 
 echo ""
@@ -411,6 +456,7 @@ echo "  Package directory:  ${SNAKE_NAME}/"
 echo "  Package name:       ${KEBAB_NAME}"
 echo "  Author:             ${AUTHOR_NAME} <${AUTHOR_EMAIL}>"
 echo "  GitHub:             https://github.com/${GITHUB_REPO}"
+echo "  PyPI publishing:    ${PYPI_ENABLED}"
 echo ""
 echo "Next steps:"
 echo "  1. Review the changes:  git diff"
@@ -421,4 +467,18 @@ echo "  5. Replace the demo code in ${SNAKE_NAME}/main.py"
 echo "  6. Set up Codecov and add the badge to README.md"
 echo "  7. Enable GitHub Pages:  Settings > Pages > Source: GitHub Actions"
 echo "  8. Push and run:        ./scripts/setup-repo.sh"
+
+if [[ "$PYPI_ENABLED" == "yes" ]]; then
+    echo ""
+    printf "${BOLD}PyPI setup:${NC}\n"
+    echo "  1. Go to https://pypi.org/manage/account/publishing/"
+    echo "  2. Add a trusted publisher:"
+    echo "       Owner:    ${GITHUB_OWNER}"
+    echo "       Repo:     ${KEBAB_NAME}"
+    echo "       Workflow: release.yml"
+    echo "  3. (Optional) Set up TestPyPI the same way at"
+    echo "     https://test.pypi.org/manage/account/publishing/"
+    echo "     with workflow: test-publish.yml"
+fi
+
 echo ""

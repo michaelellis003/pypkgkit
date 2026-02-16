@@ -9,6 +9,7 @@ on:
 permissions:
   contents: write
   id-token: write
+  attestations: write
 
 concurrency:
   group: release
@@ -46,14 +47,28 @@ jobs:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: uv run semantic-release publish
 
-      # --- Uncomment below to publish to PyPI using trusted publishing (OIDC) ---
-      # Prerequisites:
-      #   1. Create a PyPI account at https://pypi.org
-      #   2. Add a trusted publisher for this repo in PyPI project settings
-      #      (owner: <github-owner>, repo: <repo-name>, workflow: release.yml)
-      #   3. Uncomment the step below
+      - name: Validate package metadata
+        run: uvx twine check dist/*
+
+      # To publish to PyPI using trusted publishing (OIDC):
+      #   1. Create a PyPI account at https://pypi.org/account/register/
+      #   2. Go to https://pypi.org/manage/account/publishing/
+      #   3. Add a trusted publisher:
+      #        Owner: <your-github-owner>
+      #        Repository: <your-repo-name>
+      #        Workflow name: release.yml
+      #        Environment: (leave blank)
+      #   4. Run init.sh with --pypi, or uncomment the steps below.
       #
+      # PYPI-START
       # - name: Publish to PyPI
       #   uses: pypa/gh-action-pypi-publish@release/v1
       #   with:
       #     packages-dir: dist/
+      #     attestations: true
+      #
+      # - name: Attest build provenance
+      #   uses: actions/attest-build-provenance@v2
+      #   with:
+      #     subject-path: dist/*
+      # PYPI-END

@@ -226,6 +226,7 @@ Runs parallel jobs for fast feedback:
 - **Coverage** — enforces minimum code coverage (`fail_under` in `pyproject.toml`) and uploads to Codecov
 - **Pytest macOS** — smoke test on macOS to catch platform-specific issues
 - **Pytest Windows** — smoke test on Windows to catch platform-specific issues
+- **Build** — builds sdist + wheel, validates metadata with `twine check`, and verifies the wheel installs and imports correctly
 - **CI Pass** — gate job that requires all of the above to succeed; this is the single check referenced by branch protection
 
 ### On Merge to Main (`release.yml`)
@@ -234,19 +235,31 @@ Runs parallel jobs for fast feedback:
 - **Tagging** — creates a git tag for the new version
 - **Building** — runs `uv build` to produce sdist and wheel
 - **Releasing** — creates a GitHub Release with the built artifacts and release notes
+- **Publishing** — (optional) publishes to PyPI with trusted publishing and build attestations
+
+### On Manual Trigger (`test-publish.yml`)
+
+- **Build** — builds and validates the package
+- **Publish** — (optional) publishes to TestPyPI for pre-release validation
 
 ### On Merge to Main (`docs.yml`)
 
 - **Build** — runs `mkdocs build --strict` to generate static documentation
 - **Deploy** — publishes to GitHub Pages using artifact-based deployment
 
-### Publishing to PyPI
+### Publishing Your Package
 
-The release workflow includes a commented-out step for publishing to PyPI using [trusted publishing (OIDC)](https://docs.pypi.org/trusted-publishers/). To enable it:
+The template supports publishing to **PyPI**, **TestPyPI**, and **conda-forge**. See the full [Publishing Guide](https://michaelellis003.github.io/uv-python-template/publishing/) for detailed instructions.
 
-1. Create a [PyPI](https://pypi.org) account if you don't have one.
-2. In your PyPI project settings, add a trusted publisher for this repository (owner, repo name, workflow: `release.yml`).
-3. Uncomment the `Publish to PyPI` step in `.github/workflows/release.yml`.
+**Quick setup (PyPI):**
+
+1. Run `./scripts/init.sh --pypi` to enable publishing (or uncomment the `PYPI-START`/`PYPI-END` block in `release.yml` manually).
+2. Add a [trusted publisher](https://docs.pypi.org/trusted-publishers/) on pypi.org for this repository (workflow: `release.yml`).
+3. Every merge to `main` with a `feat:` or `fix:` commit will auto-publish.
+
+**TestPyPI** — a manual `test-publish.yml` workflow is included for validating your publishing pipeline before going live.
+
+**conda-forge** — a recipe skeleton in `recipe/meta.yaml` is ready to submit to [conda-forge/staged-recipes](https://github.com/conda-forge/staged-recipes) once your package is on PyPI.
 
 ## Project Structure
 
@@ -263,7 +276,8 @@ The release workflow includes a commented-out step for publishing to PyPI using 
 │   └── test_main_module.py         # Tests for __main__.py entry point
 ├── docs/
 │   ├── index.md                    # Documentation landing page
-│   └── api.md                      # Auto-generated API reference
+│   ├── api.md                      # Auto-generated API reference
+│   └── publishing.md               # PyPI, TestPyPI, and conda-forge guide
 ├── .github/
 │   ├── actions/setup-uv/           # Reusable CI composite action
 │   ├── CODEOWNERS                  # Default code ownership for reviews
@@ -274,12 +288,15 @@ The release workflow includes a commented-out step for publishing to PyPI using 
 │       ├── ci.yml                  # CI: parallel lint, format, typecheck, test matrix
 │       ├── dependabot-auto-merge.yml  # Auto-merge minor/patch Dependabot PRs
 │       ├── docs.yml                # Docs: build and deploy to GitHub Pages
-│       └── release.yml             # Gated on CI, auto-version + GitHub Release
+│       ├── release.yml             # Gated on CI, auto-version + GitHub Release
+│       └── test-publish.yml        # Manual TestPyPI publishing
 ├── .claude/                         # Claude Code AI assistant config
 │   ├── settings.json               # Permissions, hooks
 │   ├── rules/                      # Development standards
 │   ├── skills/                     # Slash commands (/tdd, /commit, /pr, etc.)
 │   └── agents/                     # Specialized subagents
+├── recipe/
+│   └── meta.yaml                   # conda-forge recipe skeleton
 ├── scripts/
 │   ├── init.sh                     # Interactive template initialization
 │   └── setup-repo.sh               # One-time repo setup (branch protection)

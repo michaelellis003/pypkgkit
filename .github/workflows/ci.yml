@@ -139,10 +139,41 @@ jobs:
       - name: Run tests
         run: uv run pytest -v --durations=0
 
+  # Build validation — ensures the package builds cleanly and installs correctly.
+  build:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+
+      - name: Setup uv
+        uses: ./.github/actions/setup-uv
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+
+      - name: Build sdist and wheel
+        run: uv build
+
+      - name: Validate package metadata
+        run: uvx twine check dist/*
+
+      - name: Verify wheel installs and imports
+        run: |
+          PACKAGE_NAME=$(uv run python -c "
+          import tomllib
+          with open('pyproject.toml', 'rb') as f:
+              name = tomllib.load(f)['project']['name']
+          print(name.replace('-', '_'))
+          ")
+          uv venv /tmp/test-install
+          /tmp/test-install/bin/pip install dist/*.whl
+          /tmp/test-install/bin/python -c "import ${PACKAGE_NAME}; print(${PACKAGE_NAME}.__version__)"
+
   # Gate job — single required check for branch protection.
   ci-pass:
     if: always()
-    needs: [ruff-lint, ruff-format, pyright, pytest, coverage, pytest-macos, pytest-windows]
+    needs: [ruff-lint, ruff-format, pyright, pytest, coverage, pytest-macos, pytest-windows, build]
     runs-on: ubuntu-latest
     timeout-minutes: 1
     steps:
