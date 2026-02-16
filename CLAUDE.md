@@ -8,11 +8,11 @@ Modular rules live in `.claude/rules/` — each covers a specific concern.
 <!-- TEMPLATE-ONLY-START -->
 **python-package-template** — a production-ready template for
 starting new Python packages. Uses uv, Ruff, Pyright, and pre-commit
-hooks. Licensed Apache-2.0.
+hooks. License is configurable during initialization (default Apache-2.0).
 
 This is a **template repository**. Users clone it, run
-`./scripts/init.sh` to rename the package and configure metadata,
-then start building. The demo functions (`hello`, `add`, `subtract`,
+`./scripts/init.sh` to rename the package and configure metadata
+(including license selection), then start building. The demo functions (`hello`, `add`, `subtract`,
 `multiply`) are working examples of the TDD workflow.
 <!-- TEMPLATE-ONLY-END -->
 
@@ -29,6 +29,10 @@ tests/
   test_init.py                  # Package-level tests
   test_main.py                  # Unit tests for demo functions
   test_main_module.py           # Tests for __main__.py entry point
+  template/                     # Template-specific tests (removed by init.sh)
+    conftest.py                # Fixtures: template_dir, init_project
+    test_template_structure.py  # Verifies template ships clean
+    test_init_license.py        # Integration tests for init.sh license setup
 docs/
   index.md                     # Documentation landing page
   api.md                       # Auto-generated API reference
@@ -56,6 +60,7 @@ docs/
     python-idioms.md            # Dataclasses, pathlib, generators, enums, functools
     testing.md                  # Test structure and conventions
   skills/                       # Custom slash commands
+    branch/SKILL.md             # /branch — create a feature branch
     tdd/SKILL.md                # /tdd — TDD cycle for a feature
     commit/SKILL.md             # /commit — conventional commit
     pr/SKILL.md                 # /pr — open a pull request
@@ -82,7 +87,7 @@ README.md                      # User documentation
 CHANGELOG.md                   # Release history
 CONTRIBUTING.md                # Contribution guidelines
 SECURITY.md                    # Security policy
-LICENSE                        # Apache-2.0 license
+LICENSE                        # Apache-2.0 license (configurable via init.sh)
 ```
 
 ## Quick Reference — Development Commands
@@ -104,8 +109,8 @@ This project follows a strict TDD-first workflow. See
 `.claude/rules/tdd-workflow.md` for the full Red-Green-Refactor protocol.
 
 **The loop:**
-1. Define work (issue with Given/When/Then acceptance criteria)
-2. Branch (`<type>/<issue-id>-<short-description>`)
+1. Define work — `/issue` (Given/When/Then acceptance criteria)
+2. Branch — `/branch <type>/<issue-id>-<short-description>`
 3. RED — write one failing test
 4. GREEN — minimal code to pass
 5. REFACTOR — clean up, tests still pass

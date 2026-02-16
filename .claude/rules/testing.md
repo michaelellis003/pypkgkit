@@ -94,6 +94,15 @@ def test_refresh_token_with_valid_token_returns_new_pair():
 3. Edge cases — unicode, None, large inputs
 4. Error handling — invalid input, exceptions
 
+## Template Tests
+
+Template-specific tests live in `tests/template/` and verify the
+template infrastructure (file structure, init.sh behavior). These
+are automatically removed when `init.sh` runs.
+
+Mark integration tests with `@pytest.mark.integration` and
+`@pytest.mark.slow`.
+
 ## CI Test Matrix
 
 Tests run against Python 3.10, 3.11, 3.12, and 3.13 in CI.
