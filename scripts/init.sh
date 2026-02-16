@@ -93,9 +93,16 @@ sedi() {
 # Replace a sed pattern across all tracked project files
 replace_all() {
     local pattern="$1"
+    local failed=false
     while IFS= read -r file; do
-        sedi "$pattern" "$file"
+        if ! sedi "$pattern" "$file"; then
+            warn "sed failed on: $file"
+            failed=true
+        fi
     done <<< "$FILES_TO_UPDATE"
+    if [[ "$failed" == "true" ]]; then
+        return 1
+    fi
 }
 
 # Validate a package name: lowercase, starts with letter, only [a-z0-9-_]
@@ -130,6 +137,26 @@ validate_name() {
 }
 
 # Validate a GitHub username or organization name
+validate_author_name() {
+    local name="$1"
+    if [[ "$name" == *$'\n'* || "$name" == *$'\r'* ]]; then
+        error "Author name must be a single line."
+        return 1
+    fi
+}
+
+validate_email() {
+    local email="$1"
+    if [[ ! "$email" == *@* ]]; then
+        error "Invalid email: '${email}' (must contain @)"
+        return 1
+    fi
+    if [[ "$email" == *$'\n'* || "$email" == *$'\r'* ]]; then
+        error "Email must be a single line."
+        return 1
+    fi
+}
+
 validate_github_owner() {
     local owner="$1"
     if [[ ! "$owner" =~ ^[a-zA-Z0-9]([a-zA-Z0-9-]*[a-zA-Z0-9])?$ ]]; then
@@ -315,7 +342,9 @@ validate_name "$KEBAB_NAME" || exit 1
 
 # Author
 prompt_required AUTHOR_NAME "Author name (e.g. Jane Smith)" "--author"
+validate_author_name "$AUTHOR_NAME" || exit 1
 prompt_required AUTHOR_EMAIL "Author email" "--email"
+validate_email "$AUTHOR_EMAIL" || exit 1
 
 # GitHub
 prompt_required GITHUB_OWNER "GitHub owner (username or org)" "--github-owner"
@@ -329,6 +358,10 @@ if [[ -z "$DESCRIPTION" ]]; then
     read -r DESCRIPTION
 fi
 DESCRIPTION=$(trim "$DESCRIPTION")
+if [[ "$DESCRIPTION" == *$'\n'* || "$DESCRIPTION" == *$'\r'* ]]; then
+    error "Description must be a single line."
+    exit 1
+fi
 
 # Escape description for use in sed replacements
 DESCRIPTION_SED=$(escape_sed_replacement "$DESCRIPTION")
@@ -493,8 +526,10 @@ replace_all "s|michaelellis003/python-package-template|${GITHUB_REPO}|g"
 replace_all "s|michaelellis003/uv-python-template|${GITHUB_REPO}|g"
 
 # --- Author information ---
-sedi "s/name = \"Michael Ellis\"/name = \"${AUTHOR_NAME}\"/" pyproject.toml
-sedi "s|email = \"michaelellis003@gmail.com\"|email = \"${AUTHOR_EMAIL}\"|" pyproject.toml
+AUTHOR_NAME_SED=$(escape_sed_replacement "$AUTHOR_NAME")
+AUTHOR_EMAIL_SED=$(escape_sed_replacement "$AUTHOR_EMAIL")
+sedi "s/name = \"Michael Ellis\"/name = \"${AUTHOR_NAME_SED}\"/" pyproject.toml
+sedi "s|email = \"michaelellis003@gmail.com\"|email = \"${AUTHOR_EMAIL_SED}\"|" pyproject.toml
 
 # --- CODEOWNERS ---
 sedi "s|@michaelellis003|@${GITHUB_OWNER}|g" .github/CODEOWNERS
@@ -993,6 +1028,7 @@ if [[ "$VALIDATION_OK" == "true" ]]; then
     ok "Project initialized successfully!"
 else
     warn "Project initialized with warnings (see above)."
+    exit 1
 fi
 echo ""
 echo "  Package directory:  ${SNAKE_NAME}/"
