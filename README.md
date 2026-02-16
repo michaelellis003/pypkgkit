@@ -62,7 +62,8 @@ powershell -ExecutionPolicy ByPass -c "irm https://astral.sh/uv/install.ps1 | ie
     For non-interactive usage, pass all values as flags:
     ```bash
     ./scripts/init.sh --name my-pkg --author "Jane Smith" --email jane@example.com \
-                      --github-owner janesmith --description "My awesome package"
+                      --github-owner janesmith --description "My awesome package" \
+                      --license mit
     ```
 
 3. Install dependencies:
@@ -273,7 +274,10 @@ The template supports publishing to **PyPI**, **TestPyPI**, and **conda-forge**.
 │   ├── conftest.py                 # Shared test fixtures
 │   ├── test_init.py                # Package-level tests
 │   ├── test_main.py                # Unit tests for demo functions
-│   └── test_main_module.py         # Tests for __main__.py entry point
+│   ├── test_main_module.py         # Tests for __main__.py entry point
+│   └── template/                   # Template tests (removed by init.sh)
+│       ├── test_template_structure.py  # Verifies template ships clean
+│       └── test_init_license.py        # Integration tests for init.sh
 ├── docs/
 │   ├── index.md                    # Documentation landing page
 │   ├── api.md                      # Auto-generated API reference
@@ -308,7 +312,7 @@ The template supports publishing to **PyPI**, **TestPyPI**, and **conda-forge**.
 ├── uv.lock                        # Locked dependency versions
 ├── CHANGELOG.md                   # Release history
 ├── CONTRIBUTING.md                # Contribution guidelines
-├── LICENSE                        # Apache-2.0 license
+├── LICENSE                        # Apache-2.0 license (configurable via init.sh)
 ├── README.md                      # This file
 └── SECURITY.md                    # Security policy
 ```

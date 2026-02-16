@@ -39,12 +39,21 @@ uv run pre-commit run --all-files
 - 400-800 lines: warn the user, suggest splitting
 - > 800 lines: strongly recommend splitting
 
-### Step 4: Push if Needed
+### Step 4: Rebase on Main
+Rebase onto the latest main to ensure a clean merge:
+```bash
+git fetch origin
+git rebase origin/main
+```
+If there are conflicts, resolve them and continue the rebase.
+Do NOT use `--force` when pushing after rebase — ask the user first.
+
+### Step 5: Push if Needed
 ```bash
 git push -u origin $(git branch --show-current)
 ```
 
-### Step 5: Create PR
+### Step 6: Create PR
 Use `gh pr create` with this structure:
 
 Title: Short imperative description (< 70 chars), matching the
@@ -68,5 +77,5 @@ Closes #<issue-number> (if applicable)
 - [ ] <any manual testing steps>
 ```
 
-### Step 6: Report
+### Step 7: Report
 Share the PR URL with the user.

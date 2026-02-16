@@ -28,6 +28,7 @@ Before committing, run the quality suite:
 uv run pytest -x --tb=short -q
 uv run ruff check .
 uv run ruff format --check .
+uv run pyright
 ```
 If any check fails, fix the issues first. Do NOT commit broken code.
 
@@ -58,8 +59,11 @@ If the user provided a message via $ARGUMENTS, use that as the basis
 but ensure it follows conventional commit format.
 
 ### Step 5: Commit
+Include a `Co-Authored-By` trailer when the commit was AI-assisted:
 ```bash
-git commit -m "<message>"
+git commit -m "<message>
+
+Co-Authored-By: Claude <noreply@anthropic.com>"
 ```
 
 ### Step 6: Verify

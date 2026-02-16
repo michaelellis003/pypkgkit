@@ -10,6 +10,7 @@
 #   ./scripts/init.sh --name my-pkg --author "Jane Smith" --email jane@example.com \
 #                     --github-owner janesmith --description "My awesome package"
 #   ./scripts/init.sh --name my-pkg --pypi     # Enable PyPI publishing
+#   ./scripts/init.sh --name my-pkg --license mit  # Select MIT license
 #
 # Prerequisites:
 #   - uv installed (https://docs.astral.sh/uv/getting-started/installation/)
@@ -68,6 +69,62 @@ validate_name() {
     fi
 }
 
+# Fetch available licenses from the GitHub Licenses API.
+# Falls back to a hardcoded list if the API is unavailable.
+# Outputs lines of "key|name" pairs.
+fetch_licenses() {
+    local api_result
+    api_result=$(curl -fsSL --max-time 5 \
+        "https://api.github.com/licenses" 2>/dev/null) || true
+
+    if [[ -n "$api_result" ]]; then
+        python3 -c "
+import json, sys
+data = json.loads(sys.stdin.read())
+for lic in data:
+    print(lic['key'] + '|' + lic['name'])
+" <<< "$api_result" 2>/dev/null && return
+    fi
+
+    # Offline fallback
+    echo "apache-2.0|Apache License 2.0"
+    echo "mit|MIT License"
+    echo "bsd-3-clause|BSD 3-Clause \"New\" or \"Revised\" License"
+    echo "gpl-3.0|GNU General Public License v3.0"
+    echo "mpl-2.0|Mozilla Public License 2.0"
+    echo "unlicense|The Unlicense"
+}
+
+# Fetch the full license text for a given SPDX key from the GitHub API.
+# Replaces placeholder fields with the provided author and year.
+# Args: $1=license_key $2=author_name $3=year
+fetch_license_body() {
+    local key="$1" author="$2" year="$3"
+    local api_result
+    api_result=$(curl -fsSL --max-time 5 \
+        "https://api.github.com/licenses/${key}" 2>/dev/null) || true
+
+    if [[ -z "$api_result" ]]; then
+        warn "Could not fetch license text from GitHub API."
+        warn "LICENSE file left unchanged."
+        return 1
+    fi
+
+    python3 -c "
+import json, sys
+data = json.loads(sys.stdin.read())
+body = data.get('body', '')
+# Replace common placeholder variants
+for placeholder in ['[year]', '[yyyy]', '<year>']:
+    body = body.replace(placeholder, sys.argv[1])
+for placeholder in ['[fullname]', '[name of copyright owner]',
+                     '[name of copyright holder]', '<name of copyright owner>',
+                     '<name of copyright holder>', '<copyright holders>']:
+    body = body.replace(placeholder, sys.argv[2])
+print(body, end='')
+" "$year" "$author" <<< "$api_result"
+}
+
 # ---------------------------------------------------------------------------
 # Ensure we're in the project root
 # ---------------------------------------------------------------------------
@@ -93,6 +150,8 @@ AUTHOR_EMAIL=""
 GITHUB_OWNER=""
 DESCRIPTION=""
 ENABLE_PYPI=""
+LICENSE_KEY=""
+CURRENT_YEAR=$(date +%Y)
 
 while [[ $# -gt 0 ]]; do
     case "$1" in
@@ -120,6 +179,10 @@ while [[ $# -gt 0 ]]; do
             ENABLE_PYPI="y"
             shift
             ;;
+        --license)
+            LICENSE_KEY="$2"
+            shift 2
+            ;;
         --help|-h)
             echo "Usage: ./scripts/init.sh [OPTIONS]"
             echo ""
@@ -133,6 +196,8 @@ while [[ $# -gt 0 ]]; do
             echo "  --github-owner OWNER  GitHub username or organization"
             echo "  --description TEXT     Short project description"
             echo "  --pypi                Enable PyPI publishing (uncomments publish steps)"
+            echo "  --license KEY         License SPDX key (e.g. mit, bsd-3-clause, gpl-3.0)"
+            echo "                        Use 'none' to skip license setup"
             echo "  --help, -h            Show this help message"
             exit 0
             ;;
@@ -201,8 +266,84 @@ fi
 
 echo ""
 PYPI_ENABLED="no"
-if [[ "${ENABLE_PYPI,,}" == "y" || "${ENABLE_PYPI,,}" == "yes" ]]; then
+ENABLE_PYPI_LOWER=$(echo "$ENABLE_PYPI" | tr '[:upper:]' '[:lower:]')
+if [[ "$ENABLE_PYPI_LOWER" == "y" || "$ENABLE_PYPI_LOWER" == "yes" ]]; then
     PYPI_ENABLED="yes"
+fi
+
+# License selection
+LICENSE_SPDX=""
+LICENSE_NAME=""
+if [[ -z "$LICENSE_KEY" ]]; then
+    echo ""
+    info "Fetching available licenses..."
+    LICENSE_LIST=$(fetch_licenses)
+
+    echo ""
+    printf "${BOLD}Select a license:${NC}\n"
+    echo "  0) Skip (keep existing Apache-2.0, no license headers)"
+
+    i=1
+    while IFS='|' read -r key name; do
+        printf "  %d) %s (%s)\n" "$i" "$name" "$key"
+        eval "LICENSE_OPTION_${i}_KEY=\"${key}\""
+        eval "LICENSE_OPTION_${i}_NAME=\"${name}\""
+        i=$((i + 1))
+    done <<< "$LICENSE_LIST"
+
+    printf "\nChoice [0]: "
+    read -r LICENSE_CHOICE
+    LICENSE_CHOICE="${LICENSE_CHOICE:-0}"
+
+    if [[ "$LICENSE_CHOICE" == "0" ]]; then
+        LICENSE_KEY="none"
+    elif [[ "$LICENSE_CHOICE" -ge 1 && "$LICENSE_CHOICE" -lt "$i" ]] 2>/dev/null; then
+        eval "LICENSE_KEY=\${LICENSE_OPTION_${LICENSE_CHOICE}_KEY}"
+        eval "LICENSE_NAME=\${LICENSE_OPTION_${LICENSE_CHOICE}_NAME}"
+    else
+        error "Invalid choice: ${LICENSE_CHOICE}"
+        exit 1
+    fi
+elif [[ "$(echo "$LICENSE_KEY" | tr '[:upper:]' '[:lower:]')" != "none" ]]; then
+    # Non-interactive: validate the key against the API
+    LICENSE_LIST=$(fetch_licenses)
+    LICENSE_NAME=$(echo "$LICENSE_LIST" | grep -i "^${LICENSE_KEY}|" | head -1 | cut -d'|' -f2)
+    if [[ -z "$LICENSE_NAME" ]]; then
+        error "Unknown license key: '${LICENSE_KEY}'"
+        echo "  Available keys:"
+        echo "$LICENSE_LIST" | while IFS='|' read -r key name; do
+            echo "    ${key} — ${name}"
+        done
+        exit 1
+    fi
+    # Normalize the key to match API casing
+    LICENSE_KEY=$(echo "$LICENSE_LIST" | grep -i "^${LICENSE_KEY}|" | head -1 | cut -d'|' -f1)
+fi
+
+LICENSE_KEY_LOWER=$(echo "$LICENSE_KEY" | tr '[:upper:]' '[:lower:]')
+if [[ "$LICENSE_KEY_LOWER" == "none" ]]; then
+    LICENSE_SPDX="Apache-2.0"
+    LICENSE_NAME="Apache License 2.0 (unchanged)"
+else
+    # Map common license keys to SPDX identifiers
+    LICENSE_SPDX=$(python3 -c "
+spdx_map = {
+    'agpl-3.0': 'AGPL-3.0-only',
+    'apache-2.0': 'Apache-2.0',
+    'bsd-2-clause': 'BSD-2-Clause',
+    'bsd-3-clause': 'BSD-3-Clause',
+    'bsl-1.0': 'BSL-1.0',
+    'cc0-1.0': 'CC0-1.0',
+    'epl-2.0': 'EPL-2.0',
+    'gpl-2.0': 'GPL-2.0-only',
+    'gpl-3.0': 'GPL-3.0-only',
+    'lgpl-2.1': 'LGPL-2.1-only',
+    'mit': 'MIT',
+    'mpl-2.0': 'MPL-2.0',
+    'unlicense': 'Unlicense',
+}
+print(spdx_map.get('${LICENSE_KEY}', '${LICENSE_KEY}'.upper()))
+")
 fi
 
 echo "-----------------------------------------"
@@ -213,11 +354,13 @@ echo "  Author:                ${AUTHOR_NAME} <${AUTHOR_EMAIL}>"
 echo "  GitHub repo:           ${GITHUB_REPO}"
 echo "  Description:           ${DESCRIPTION}"
 echo "  PyPI publishing:       ${PYPI_ENABLED}"
+echo "  License:               ${LICENSE_NAME} (${LICENSE_SPDX})"
 echo "-----------------------------------------"
 echo ""
 printf "Proceed? [Y/n] "
 read -r CONFIRM
-if [[ "${CONFIRM,,}" == "n" ]]; then
+CONFIRM_LOWER=$(echo "$CONFIRM" | tr '[:upper:]' '[:lower:]')
+if [[ "$CONFIRM_LOWER" == "n" ]]; then
     echo "Aborted."
     exit 0
 fi
@@ -247,6 +390,7 @@ FILES_TO_UPDATE=$(find . \
     -not -path './.ruff_cache/*' \
     -not -path './.pytest_cache/*' \
     -not -path './*__pycache__*' \
+    -not -path './tests/template/*' \
     -not -path './uv.lock' \
     -not -path './CHANGELOG.md' \
     -not -name 'init.sh' \
@@ -345,7 +489,82 @@ info "Updating README..."
 sedi "s|# Package source (rename this)|# Package source|" README.md
 
 # ---------------------------------------------------------------------------
-# 9. Strip template-only content from README
+# 9. Generate license files and apply headers
+# ---------------------------------------------------------------------------
+
+if [[ "$LICENSE_KEY_LOWER" != "none" ]]; then
+    info "Setting up license (${LICENSE_SPDX})..."
+
+    # Fetch and write the LICENSE file
+    LICENSE_BODY=$(fetch_license_body "$LICENSE_KEY" "$AUTHOR_NAME" "$CURRENT_YEAR")
+    if [[ -n "$LICENSE_BODY" ]]; then
+        echo "$LICENSE_BODY" > LICENSE
+        ok "LICENSE file updated."
+    fi
+
+    # Update pyproject.toml license field
+    sedi "s|license = {text = \"Apache-2.0\"}|license = {text = \"${LICENSE_SPDX}\"}|" pyproject.toml
+
+    # Generate LICENSE_HEADER for the insert-license pre-commit hook
+    cat > LICENSE_HEADER << HEADER_EOF
+Copyright ${CURRENT_YEAR} ${AUTHOR_NAME}
+SPDX-License-Identifier: ${LICENSE_SPDX}
+HEADER_EOF
+    ok "LICENSE_HEADER generated."
+
+    # Add the insert-license pre-commit hook (before the ruff block)
+    python3 -c "
+import sys
+
+content = open('.pre-commit-config.yaml').read()
+hook_block = '''  - repo: https://github.com/Lucas-C/pre-commit-hooks
+    rev: v1.5.5
+    hooks:
+      - id: insert-license
+        files: \\\\.py$
+        args:
+          - --license-filepath=LICENSE_HEADER
+          - --comment-style=#
+          - --detect-license-in-X-top-lines=5
+'''
+# Insert before the ruff-pre-commit block
+marker = '  # Keep rev in sync with ruff version'
+content = content.replace(marker, hook_block + marker)
+open('.pre-commit-config.yaml', 'w').write(content)
+"
+    ok "insert-license pre-commit hook added."
+
+    # Apply SPDX headers to all .py files
+    info "Applying license headers to .py files..."
+    HEADER_LINE1="# Copyright ${CURRENT_YEAR} ${AUTHOR_NAME}"
+    HEADER_LINE2="# SPDX-License-Identifier: ${LICENSE_SPDX}"
+
+    find "${SNAKE_NAME}" tests -name '*.py' -type f | while IFS= read -r pyfile; do
+        # Handle shebang lines
+        first_line=$(head -1 "$pyfile")
+        if [[ "$first_line" == "#!"* ]]; then
+            rest=$(tail -n +2 "$pyfile")
+            {
+                echo "$first_line"
+                echo "$HEADER_LINE1"
+                echo "$HEADER_LINE2"
+                echo "$rest"
+            } > "${pyfile}.tmp" && mv "${pyfile}.tmp" "$pyfile"
+        else
+            {
+                echo "$HEADER_LINE1"
+                echo "$HEADER_LINE2"
+                cat "$pyfile"
+            } > "${pyfile}.tmp" && mv "${pyfile}.tmp" "$pyfile"
+        fi
+    done
+    ok "License headers applied."
+else
+    info "Skipping license setup (keeping Apache-2.0 defaults)."
+fi
+
+# ---------------------------------------------------------------------------
+# 10. Strip template-only content
 # ---------------------------------------------------------------------------
 
 info "Stripping template-only sections from README..."
@@ -394,11 +613,11 @@ sedi '/init\.sh.*Interactive template/d' README.md
 sedi '/init\.sh.*Interactive project/d' CLAUDE.md
 
 # Strip template-only content from CLAUDE.md
-awk -v name="${KEBAB_NAME}" -v desc="${DESCRIPTION}" '
+awk -v name="${KEBAB_NAME}" -v desc="${DESCRIPTION}" -v lic="${LICENSE_SPDX}" '
 /<!-- TEMPLATE-ONLY-START -->/ {
     skip = 1
     printf "**%s** — %s. Uses uv, Ruff, Pyright, and pre-commit\n", name, desc
-    print "hooks. Licensed Apache-2.0."
+    printf "hooks. Licensed %s.\n", lic
     next
 }
 /<!-- TEMPLATE-ONLY-END -->/ { skip = 0; next }
@@ -406,7 +625,7 @@ awk -v name="${KEBAB_NAME}" -v desc="${DESCRIPTION}" '
 ' CLAUDE.md > CLAUDE.md.tmp && mv CLAUDE.md.tmp CLAUDE.md
 
 # ---------------------------------------------------------------------------
-# 10. Enable PyPI publishing (if requested)
+# 11. Enable PyPI publishing (if requested)
 # ---------------------------------------------------------------------------
 
 if [[ "$PYPI_ENABLED" == "yes" ]]; then
@@ -426,7 +645,7 @@ if [[ "$PYPI_ENABLED" == "yes" ]]; then
 fi
 
 # ---------------------------------------------------------------------------
-# 11. Regenerate the lockfile
+# 12. Regenerate the lockfile
 # ---------------------------------------------------------------------------
 
 info "Regenerating uv.lock..."
@@ -439,14 +658,30 @@ else
 fi
 
 # ---------------------------------------------------------------------------
-# 12. Self-cleanup
+# 13. Self-cleanup
 # ---------------------------------------------------------------------------
 
 info "Removing init script (no longer needed)..."
 rm -f -- "$0"
 
+# Remove template-specific tests (not needed for derived projects)
+if [[ -d "tests/template" ]]; then
+    rm -rf tests/template
+
+    # Remove tests/template/ references from documentation
+    sedi '/template\/.*# Template-specific/d' CLAUDE.md
+    sedi '/conftest.py.*# Fixtures: template_dir/d' CLAUDE.md
+    sedi '/test_template_structure/d' CLAUDE.md
+    sedi '/test_init_license/d' CLAUDE.md
+    sedi '/template\/.*# Template tests/d' README.md
+    sedi '/test_template_structure.*Verifies template/d' README.md
+    sedi '/test_init_license.*Integration tests/d' README.md
+
+    ok "Template tests removed."
+fi
+
 # ---------------------------------------------------------------------------
-# 13. Summary
+# 14. Summary
 # ---------------------------------------------------------------------------
 
 echo ""
@@ -457,6 +692,7 @@ echo "  Package name:       ${KEBAB_NAME}"
 echo "  Author:             ${AUTHOR_NAME} <${AUTHOR_EMAIL}>"
 echo "  GitHub:             https://github.com/${GITHUB_REPO}"
 echo "  PyPI publishing:    ${PYPI_ENABLED}"
+echo "  License:            ${LICENSE_SPDX}"
 echo ""
 echo "Next steps:"
 echo "  1. Review the changes:  git diff"
