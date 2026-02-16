@@ -2,6 +2,14 @@
 
 <!-- version list -->
 
+## v1.7.1 (2026-02-16)
+
+### Bug Fixes
+
+- **init**: Validate flag args, escape sed metacharacters, expand checks
+  ([`6d6f0ae`](https://github.com/michaelellis003/uv-python-template/commit/6d6f0aec293acf78e23446142a4b39a0a323f840))
+
+
 ## v1.7.0 (2026-02-16)
 
 ### Bug Fixes
