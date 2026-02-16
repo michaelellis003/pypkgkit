@@ -200,7 +200,7 @@ Version bumping is handled automatically by `python-semantic-release` on merge t
 
 ## Documentation
 
-This project uses [MkDocs](https://www.mkdocs.org/) with the [Material](https://squidfund.github.io/mkdocs-material/) theme for documentation. API reference is auto-generated from Google-style docstrings using [mkdocstrings](https://mkdocstrings.github.io/).
+This project uses [MkDocs](https://www.mkdocs.org/) with the [Material](https://squidfunk.github.io/mkdocs-material/) theme for documentation. API reference is auto-generated from Google-style docstrings using [mkdocstrings](https://mkdocstrings.github.io/).
 
 ```bash
 uv run --group docs mkdocs serve             # Preview at http://127.0.0.1:8000
@@ -225,6 +225,7 @@ Runs parallel jobs for fast feedback:
 - **Pyright** — static type checking
 - **Pytest** — runs tests across Python 3.10, 3.11, 3.12, and 3.13
 - **Coverage** — enforces minimum code coverage (`fail_under` in `pyproject.toml`) and uploads to Codecov
+- **Lock Check** — verifies `uv.lock` is in sync with `pyproject.toml`
 - **Pytest macOS** — smoke test on macOS to catch platform-specific issues
 - **Pytest Windows** — smoke test on Windows to catch platform-specific issues
 - **Build** — builds sdist + wheel, validates metadata with `twine check`, and verifies the wheel installs and imports correctly
@@ -247,6 +248,15 @@ Runs parallel jobs for fast feedback:
 
 - **Build** — runs `mkdocs build --strict` to generate static documentation
 - **Deploy** — publishes to GitHub Pages using artifact-based deployment
+
+### On Push to Main and Pull Request (`e2e.yml`)
+
+Docker-based end-to-end tests that verify `init.sh` works correctly across multiple Python versions and license configurations. Run locally with:
+
+```bash
+./tests/e2e/run-e2e.sh          # Full matrix
+./tests/e2e/run-e2e.sh --quick  # python:3.13-slim only
+```
 
 ### Publishing Your Package
 
