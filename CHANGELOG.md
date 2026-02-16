@@ -2,6 +2,19 @@
 
 <!-- version list -->
 
+## v1.7.0 (2026-02-16)
+
+### Bug Fixes
+
+- **init**: Improve error handling and fix docs bugs
+  ([`e568ddc`](https://github.com/michaelellis003/uv-python-template/commit/e568ddc15f7e67a2d99cd18deacedffc5992074c))
+
+### Features
+
+- **e2e**: Add Docker-based end-to-end test suite
+  ([`c5f1ae7`](https://github.com/michaelellis003/uv-python-template/commit/c5f1ae72f643e24a7ea5506ce461018799f11a9e))
+
+
 ## v1.6.0 (2026-02-16)
 
 ### Bug Fixes
