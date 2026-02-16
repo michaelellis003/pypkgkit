@@ -154,7 +154,7 @@ fi
 # No stale template references in key files
 STALE=$(grep -rl 'python_package_template\|python-package-template' \
     --include='*.py' --include='*.toml' --include='*.yml' \
-    --include='*.yaml' --include='*.md' \
+    --include='*.yaml' --include='*.md' --include='*.json' \
     . 2>/dev/null \
     | grep -v '.git/' \
     | grep -v 'uv.lock' \

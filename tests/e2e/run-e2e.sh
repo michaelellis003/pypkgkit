@@ -23,6 +23,7 @@ NC='\033[0m'
 # Default full matrix
 IMAGES=(
     "python:3.10-slim"
+    "python:3.11-slim"
     "python:3.12-slim"
     "python:3.13-slim"
     "python:3.13-alpine"

@@ -38,6 +38,20 @@ to_snake() { echo "$1" | tr '-' '_'; }
 to_kebab() { echo "$1" | tr '_' '-'; }
 to_title() { echo "$1" | tr '-' ' ' | awk '{for(i=1;i<=NF;i++) $i=toupper(substr($i,1,1)) substr($i,2)}1'; }
 
+require_arg() {
+    local flag="$1"
+    local nargs="$2"
+    if [[ "$nargs" -lt 2 ]]; then
+        error "Option ${flag} requires a value"
+        echo "  Run with --help for usage."
+        exit 1
+    fi
+}
+
+escape_sed_replacement() {
+    printf '%s' "$1" | sed -e 's/[\\|&]/\\&/g'
+}
+
 # Cross-platform in-place sed (BSD sed on macOS requires -i '')
 sedi() {
     if [[ "$OSTYPE" == "darwin"* ]]; then
@@ -162,22 +176,27 @@ CURRENT_YEAR=$(date +%Y)
 while [[ $# -gt 0 ]]; do
     case "$1" in
         --name|-n)
+            require_arg "$1" "$#"
             PROJECT_NAME="$2"
             shift 2
             ;;
         --author)
+            require_arg "$1" "$#"
             AUTHOR_NAME="$2"
             shift 2
             ;;
         --email)
+            require_arg "$1" "$#"
             AUTHOR_EMAIL="$2"
             shift 2
             ;;
         --github-owner)
+            require_arg "$1" "$#"
             GITHUB_OWNER="$2"
             shift 2
             ;;
         --description)
+            require_arg "$1" "$#"
             DESCRIPTION="$2"
             shift 2
             ;;
@@ -186,6 +205,7 @@ while [[ $# -gt 0 ]]; do
             shift
             ;;
         --license)
+            require_arg "$1" "$#"
             LICENSE_KEY="$2"
             shift 2
             ;;
@@ -263,6 +283,9 @@ if [[ -z "$DESCRIPTION" ]]; then
     printf "${BOLD}Short description${NC} (one line): "
     read -r DESCRIPTION
 fi
+
+# Escape description for use in sed replacements
+DESCRIPTION_SED=$(escape_sed_replacement "$DESCRIPTION")
 
 # PyPI publishing
 if [[ -z "$ENABLE_PYPI" ]]; then
@@ -433,11 +456,11 @@ replace_all "s/Python Package Template/${TITLE_NAME}/g"
 
 info "Updating project description..."
 
-sedi "s|A production-ready template for starting new Python packages\.|${DESCRIPTION}|" pyproject.toml
+sedi "s|A production-ready template for starting new Python packages\.|${DESCRIPTION_SED}|" pyproject.toml
 
 # Update conda-forge recipe metadata
 if [[ -f recipe/meta.yaml ]]; then
-    sedi "s|A production-ready template for starting new Python packages\.|${DESCRIPTION}|" recipe/meta.yaml
+    sedi "s|A production-ready template for starting new Python packages\.|${DESCRIPTION_SED}|" recipe/meta.yaml
     sedi "s|michaelellis003|${GITHUB_OWNER}|g" recipe/meta.yaml
 fi
 
@@ -453,7 +476,7 @@ sedi '/codecov\.io/d' README.md
 # The license badge URL was already updated by the GitHub URL replacement above
 
 # Update the README description line
-sedi "s|A production-ready template for starting new Python packages\. Clone it, rename a few things, and start building — dependency management, linting, type checking, testing, and CI/CD are already wired up\.|${DESCRIPTION}|" README.md
+sedi "s|A production-ready template for starting new Python packages\. Clone it, rename a few things, and start building — dependency management, linting, type checking, testing, and CI/CD are already wired up\.|${DESCRIPTION_SED}|" README.md
 
 # ---------------------------------------------------------------------------
 # 5. Update keywords
@@ -772,7 +795,7 @@ fi
 # Check for stale template references in tracked files
 STALE_REFS=$(grep -rl 'python_package_template\|python-package-template' \
     --include='*.py' --include='*.toml' --include='*.yml' --include='*.yaml' \
-    --include='*.md' --include='*.cfg' \
+    --include='*.md' --include='*.cfg' --include='*.json' \
     . 2>/dev/null \
     | grep -v '.git/' \
     | grep -v 'uv.lock' \
@@ -806,6 +829,7 @@ if [[ -d "tests/template" ]]; then
     sedi '/conftest.py.*# Fixtures: template_dir/d' CLAUDE.md
     sedi '/test_template_structure/d' CLAUDE.md
     sedi '/test_init_license/d' CLAUDE.md
+    sedi '/test_init_flags/d' CLAUDE.md
     sedi '/template\/.*# Template tests/d' README.md
     sedi '/test_template_structure.*Verifies template/d' README.md
     sedi '/test_init_license.*Integration tests/d' README.md

@@ -36,6 +36,7 @@ jobs:
       matrix:
         base-image:
           - "python:3.10-slim"
+          - "python:3.11-slim"
           - "python:3.12-slim"
           - "python:3.13-slim"
           - "python:3.13-alpine"
