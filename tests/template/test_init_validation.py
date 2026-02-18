@@ -450,3 +450,65 @@ class TestClassifierForSpdx:
     def test_classifier_for_unknown_spdx_returns_none(self, init_mod):
         """Test that unknown SPDX IDs return None."""
         assert init_mod.classifier_for_spdx('UNKNOWN-1.0') is None
+
+
+# ===================================================================
+# parse_args
+# ===================================================================
+
+
+class TestParseArgs:
+    """Tests for parse_args."""
+
+    def test_parse_args_all_flags(self, init_mod):
+        """Test that all flags are parsed correctly."""
+        args = init_mod.parse_args(
+            [
+                '--name',
+                'my-pkg',
+                '--author',
+                'Jane Smith',
+                '--email',
+                'jane@example.com',
+                '--github-owner',
+                'janesmith',
+                '--description',
+                'A great package',
+                '--license',
+                'mit',
+                '--pypi',
+            ]
+        )
+        assert args.name == 'my-pkg'
+        assert args.author == 'Jane Smith'
+        assert args.email == 'jane@example.com'
+        assert args.github_owner == 'janesmith'
+        assert args.description == 'A great package'
+        assert args.license == 'mit'
+        assert args.pypi is True
+
+    def test_parse_args_short_name_flag(self, init_mod):
+        """Test that -n works as short form of --name."""
+        args = init_mod.parse_args(['-n', 'my-pkg'])
+        assert args.name == 'my-pkg'
+
+    def test_parse_args_defaults_to_none(self, init_mod):
+        """Test that unset flags default to None."""
+        args = init_mod.parse_args([])
+        assert args.name is None
+        assert args.author is None
+        assert args.email is None
+        assert args.github_owner is None
+        assert args.description is None
+        assert args.license is None
+        assert args.pypi is False
+
+    def test_parse_args_pypi_flag_is_boolean(self, init_mod):
+        """Test that --pypi takes no argument."""
+        args = init_mod.parse_args(['--pypi'])
+        assert args.pypi is True
+
+    def test_parse_args_without_pypi(self, init_mod):
+        """Test that pypi defaults to False."""
+        args = init_mod.parse_args(['--name', 'test'])
+        assert args.pypi is False
