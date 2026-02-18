@@ -136,7 +136,8 @@ else
 fi
 
 # README.md has no init script reference (outside template-only markers, which are gone)
-if ! grep -qE 'init\.(sh|py)' README.md 2>/dev/null; then
+# Exclude test_init.py / test_init_*.py file names (legitimate project files)
+if ! grep -E 'init\.(sh|py)' README.md 2>/dev/null | grep -qvE 'test_init'; then
     pass "README.md has no init script reference"
 else
     fail "README.md still references init script"
