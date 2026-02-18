@@ -1,6 +1,6 @@
-"""Integration tests for init.sh license setup.
+"""Integration tests for init.py license setup.
 
-These tests copy the repo to a temp directory, run init.sh with
+These tests copy the repo to a temp directory, run init.py with
 various --license flags, and verify the resulting project state.
 """
 
@@ -19,11 +19,11 @@ CURRENT_YEAR = str(datetime.now(tz=timezone.utc).year)
 @pytest.mark.integration
 @pytest.mark.slow
 class TestLicenseMit:
-    """Tests for init.sh --license mit."""
+    """Tests for init.py --license mit."""
 
     @pytest.fixture(autouse=True)
     def _setup(self, init_project):
-        """Run init.sh with --license mit once for all tests."""
+        """Run init.py with --license mit once for all tests."""
         self.project = init_project(
             extra_flags=['--license', 'mit'],
         )
@@ -81,11 +81,11 @@ class TestLicenseMit:
 @pytest.mark.integration
 @pytest.mark.slow
 class TestLicenseNone:
-    """Tests for init.sh --license none."""
+    """Tests for init.py --license none."""
 
     @pytest.fixture(autouse=True)
     def _setup(self, init_project):
-        """Run init.sh with --license none once for all tests."""
+        """Run init.py with --license none once for all tests."""
         self.project = init_project(
             extra_flags=['--license', 'none'],
         )
@@ -134,12 +134,13 @@ class TestLicenseNone:
 @pytest.mark.integration
 @pytest.mark.slow
 def test_init_without_license_flag_defaults_to_none(init_project):
-    """Test that omitting --license and choosing 0 skips setup."""
-    # When no --license flag, init.sh prompts for:
-    # 1. PyPI publishing (n), 2. license choice (0=skip), 3. confirm (y)
+    """Test that omitting --license defaults to none (unchanged)."""
+    # When no --license flag and stdin is a pipe, init.py
+    # skips license selection and defaults to 'none'.
+    # Only the confirmation prompt reads from stdin.
     project = init_project(
         extra_flags=None,
-        stdin_text='n\n0\ny\n',
+        stdin_text='y\n',
     )
 
     assert not (project / 'LICENSE_HEADER').exists()

@@ -1,6 +1,6 @@
-"""Tests for init.sh flag validation and special character handling.
+"""Tests for init.py flag validation and special character handling.
 
-These tests verify that init.sh properly validates flag arguments
+These tests verify that init.py properly validates flag arguments
 and handles special characters in user-provided values.
 """
 
@@ -24,7 +24,7 @@ _EXCLUDE_DIRS = {
     '.coverage',
 }
 
-# Standard flags that provide all required inputs for init.sh
+# Standard flags that provide all required inputs for init.py
 _ALL_FLAGS = [
     '--name',
     'test-pkg',
@@ -50,9 +50,23 @@ def _setup_project(tmp_path, template_dir):
     """Copy template to tmpdir and return (project_path, init_script)."""
     project = tmp_path / 'project'
     shutil.copytree(template_dir, project, ignore=_ignore_dirs)
-    init_script = project / 'scripts' / 'init.sh'
-    init_script.chmod(0o755)
+    init_script = project / 'scripts' / 'init.py'
     return project, init_script
+
+
+def _run_init(init_script, project, extra_args=None, stdin_text=''):
+    """Run init.py via uv and return the CompletedProcess."""
+    cmd = ['uv', 'run', '--script', str(init_script)]
+    if extra_args:
+        cmd.extend(extra_args)
+    return subprocess.run(
+        cmd,
+        cwd=str(project),
+        input=stdin_text,
+        capture_output=True,
+        text=True,
+        timeout=60,
+    )
 
 
 @pytest.mark.integration
@@ -61,26 +75,16 @@ def test_init_flag_without_value_exits_with_error(
     tmp_path: Path,
     template_dir: Path,
 ):
-    """Test that init.sh exits with error when flag has no value."""
-    project = tmp_path / 'project'
-    shutil.copytree(template_dir, project, ignore=_ignore_dirs)
+    """Test that init.py exits with error when flag has no value."""
+    project, init_script = _setup_project(tmp_path, template_dir)
 
-    init_script = project / 'scripts' / 'init.sh'
-    init_script.chmod(0o755)
-
-    result = subprocess.run(
-        [str(init_script), '--name'],
-        cwd=str(project),
-        capture_output=True,
-        text=True,
-        timeout=10,
-    )
+    result = _run_init(init_script, project, extra_args=['--name'])
 
     assert result.returncode != 0, (
         f'Expected non-zero exit code, got {result.returncode}'
     )
-    assert 'requires a value' in result.stderr, (
-        f'Expected "requires a value" in stderr, got: {result.stderr}'
+    assert 'expected one argument' in result.stderr, (
+        f'Expected "expected one argument" in stderr, got: {result.stderr}'
     )
 
 
@@ -91,17 +95,14 @@ def test_init_description_with_pipe_preserved_in_pyproject(
     template_dir: Path,
 ):
     """Test that description with pipe character is preserved."""
-    project = tmp_path / 'project'
-    shutil.copytree(template_dir, project, ignore=_ignore_dirs)
-
-    init_script = project / 'scripts' / 'init.sh'
-    init_script.chmod(0o755)
+    project, init_script = _setup_project(tmp_path, template_dir)
 
     description = 'CLI tools | Python utilities'
 
-    result = subprocess.run(
-        [
-            str(init_script),
+    result = _run_init(
+        init_script,
+        project,
+        extra_args=[
             '--name',
             'test-pkg',
             '--author',
@@ -115,15 +116,11 @@ def test_init_description_with_pipe_preserved_in_pyproject(
             '--license',
             'mit',
         ],
-        cwd=str(project),
-        input='n\ny\n',
-        capture_output=True,
-        text=True,
-        timeout=30,
+        stdin_text='y\n',
     )
 
     assert result.returncode == 0, (
-        f'init.sh failed (rc={result.returncode})\n'
+        f'init.py failed (rc={result.returncode})\n'
         f'STDOUT:\n{result.stdout}\n'
         f'STDERR:\n{result.stderr}'
     )
@@ -142,16 +139,13 @@ def test_init_stdlib_name_exits_with_error(
     tmp_path: Path,
     template_dir: Path,
 ):
-    """Test that init.sh rejects names that shadow stdlib modules."""
+    """Test that init.py rejects names that shadow stdlib modules."""
     project, init_script = _setup_project(tmp_path, template_dir)
 
-    result = subprocess.run(
-        [str(init_script), '--name', 'json'],
-        cwd=str(project),
-        input='',
-        capture_output=True,
-        text=True,
-        timeout=10,
+    result = _run_init(
+        init_script,
+        project,
+        extra_args=['--name', 'json'],
     )
 
     assert result.returncode != 0, (
@@ -168,12 +162,13 @@ def test_init_invalid_github_owner_exits_with_error(
     tmp_path: Path,
     template_dir: Path,
 ):
-    """Test that init.sh rejects invalid GitHub owner names."""
+    """Test that init.py rejects invalid GitHub owner names."""
     project, init_script = _setup_project(tmp_path, template_dir)
 
-    result = subprocess.run(
-        [
-            str(init_script),
+    result = _run_init(
+        init_script,
+        project,
+        extra_args=[
             '--name',
             'test-pkg',
             '--author',
@@ -187,11 +182,7 @@ def test_init_invalid_github_owner_exits_with_error(
             '--license',
             'mit',
         ],
-        cwd=str(project),
-        input='n\ny\n',
-        capture_output=True,
-        text=True,
-        timeout=10,
+        stdin_text='y\n',
     )
 
     assert result.returncode != 0, (
@@ -208,17 +199,14 @@ def test_init_missing_required_field_noninteractive_exits_with_error(
     tmp_path: Path,
     template_dir: Path,
 ):
-    """Test that init.sh errors when required input is missing."""
+    """Test that init.py errors when required input is missing."""
     project, init_script = _setup_project(tmp_path, template_dir)
 
     # Provide --name but omit --author; stdin is a pipe (non-interactive)
-    result = subprocess.run(
-        [str(init_script), '--name', 'test-pkg'],
-        cwd=str(project),
-        input='',
-        capture_output=True,
-        text=True,
-        timeout=10,
+    result = _run_init(
+        init_script,
+        project,
+        extra_args=['--name', 'test-pkg'],
     )
 
     assert result.returncode != 0, (
@@ -235,12 +223,13 @@ def test_init_description_whitespace_trimmed(
     tmp_path: Path,
     template_dir: Path,
 ):
-    """Test that leading/trailing whitespace is trimmed from description."""
+    """Test that leading/trailing whitespace is trimmed."""
     project, init_script = _setup_project(tmp_path, template_dir)
 
-    result = subprocess.run(
-        [
-            str(init_script),
+    result = _run_init(
+        init_script,
+        project,
+        extra_args=[
             '--name',
             'test-pkg',
             '--author',
@@ -254,15 +243,11 @@ def test_init_description_whitespace_trimmed(
             '--license',
             'none',
         ],
-        cwd=str(project),
-        input='n\ny\n',
-        capture_output=True,
-        text=True,
-        timeout=30,
+        stdin_text='y\n',
     )
 
     assert result.returncode == 0, (
-        f'init.sh failed (rc={result.returncode})\n'
+        f'init.py failed (rc={result.returncode})\n'
         f'STDOUT:\n{result.stdout}\n'
         f'STDERR:\n{result.stderr}'
     )
@@ -282,9 +267,10 @@ def test_init_description_with_double_quotes_produces_valid_toml(
     """Test that description with double quotes is TOML-escaped."""
     project, init_script = _setup_project(tmp_path, template_dir)
 
-    result = subprocess.run(
-        [
-            str(init_script),
+    result = _run_init(
+        init_script,
+        project,
+        extra_args=[
             '--name',
             'test-pkg',
             '--author',
@@ -298,15 +284,11 @@ def test_init_description_with_double_quotes_produces_valid_toml(
             '--license',
             'mit',
         ],
-        cwd=str(project),
-        input='n\ny\n',
-        capture_output=True,
-        text=True,
-        timeout=30,
+        stdin_text='y\n',
     )
 
     assert result.returncode == 0, (
-        f'init.sh failed (rc={result.returncode})\n'
+        f'init.py failed (rc={result.returncode})\n'
         f'STDOUT:\n{result.stdout}\n'
         f'STDERR:\n{result.stderr}'
     )
@@ -324,12 +306,13 @@ def test_init_empty_description_noninteractive_exits_with_error(
     tmp_path: Path,
     template_dir: Path,
 ):
-    """Test that init.sh rejects empty description in non-interactive mode."""
+    """Test that init.py rejects empty description in non-interactive."""
     project, init_script = _setup_project(tmp_path, template_dir)
 
-    result = subprocess.run(
-        [
-            str(init_script),
+    result = _run_init(
+        init_script,
+        project,
+        extra_args=[
             '--name',
             'test-pkg',
             '--author',
@@ -343,11 +326,6 @@ def test_init_empty_description_noninteractive_exits_with_error(
             '--license',
             'none',
         ],
-        cwd=str(project),
-        input='',
-        capture_output=True,
-        text=True,
-        timeout=10,
     )
 
     assert result.returncode != 0, (
@@ -367,9 +345,10 @@ def test_init_description_with_backslash_produces_valid_toml(
     """Test that description with backslash is TOML-escaped."""
     project, init_script = _setup_project(tmp_path, template_dir)
 
-    result = subprocess.run(
-        [
-            str(init_script),
+    result = _run_init(
+        init_script,
+        project,
+        extra_args=[
             '--name',
             'test-pkg',
             '--author',
@@ -383,15 +362,11 @@ def test_init_description_with_backslash_produces_valid_toml(
             '--license',
             'mit',
         ],
-        cwd=str(project),
-        input='n\ny\n',
-        capture_output=True,
-        text=True,
-        timeout=30,
+        stdin_text='y\n',
     )
 
     assert result.returncode == 0, (
-        f'init.sh failed (rc={result.returncode})\n'
+        f'init.py failed (rc={result.returncode})\n'
         f'STDOUT:\n{result.stdout}\n'
         f'STDERR:\n{result.stderr}'
     )
