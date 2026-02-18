@@ -404,6 +404,35 @@ class TestUpdateDescription:
         content = f.read_text()
         assert 'My awesome package' in content
 
+    def test_update_description_yaml_escapes_special_chars(
+        self, init_mod, tmp_path
+    ):
+        """Test that meta.yaml description is YAML-escaped."""
+        recipe_dir = tmp_path / 'recipe'
+        recipe_dir.mkdir()
+        f = recipe_dir / 'meta.yaml'
+        f.write_text(
+            'summary: A production-ready template for '
+            'starting new Python packages.'
+        )
+        pyproject = tmp_path / 'pyproject.toml'
+        pyproject.write_text(
+            'description = "A production-ready template for '
+            'starting new Python packages."'
+        )
+        config = init_mod.ProjectConfig(
+            name='my-pkg',
+            author='Jane',
+            email='j@e.com',
+            github_owner='jane',
+            description='Tools: fast # efficient',
+            license_key='mit',
+            enable_pypi=False,
+        )
+        init_mod.update_description(tmp_path, config)
+        content = f.read_text()
+        assert "'Tools: fast # efficient'" in content
+
 
 # ===================================================================
 # setup_license
