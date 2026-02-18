@@ -1434,15 +1434,16 @@ def _setup_license_if_needed(
 
     spdx = spdx_id_for_key(config.license_key)
     print(f'==> Setting up license ({spdx})...')
-    ok = True
 
     body = fetch_license_body(config.license_key, config.author, year)
     if body:
         (root / 'LICENSE').write_text(body + '\n')
         print('==> LICENSE file updated.')
     else:
-        print('warning: Could not fetch license text.')
-        ok = False
+        print(
+            'warning: Could not fetch license text from GitHub API. '
+            'LICENSE file left unchanged.'
+        )
 
     setup_license_metadata(root, spdx, config.author, year)
     print('==> LICENSE_HEADER generated.')
@@ -1453,7 +1454,7 @@ def _setup_license_if_needed(
     print('==> Applying license headers to .py files...')
     apply_license_headers(root, config.snake_name, config.author, spdx, year)
     print('==> License headers applied.')
-    return ok
+    return True
 
 
 def _update_readme_structure(root: Path) -> None:
@@ -1918,7 +1919,11 @@ def main() -> None:
         sys.exit(1)
 
     args = parse_args()
-    config = prompt_project_config(args)
+    try:
+        config = prompt_project_config(args)
+    except ValueError as exc:
+        print(f'error: {exc}', file=sys.stderr)
+        sys.exit(1)
     ok = init_project(config, root)
     _print_summary(config, ok)
 
