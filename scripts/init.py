@@ -1556,7 +1556,10 @@ def _strip_init_refs_from_md(root: Path, spdx: str) -> None:
             lines = [
                 ln
                 for ln in content.split('\n')
-                if 'init.sh' not in ln or 'Interactive' not in ln
+                if not (
+                    ('init.sh' in ln or 'init.py' in ln)
+                    and ('Interactive' in ln or 'initialization' in ln)
+                )
             ]
             md_file.write_text('\n'.join(lines))
 
