@@ -179,6 +179,11 @@ class TestScaffold:
         with (
             patch('pypkgkit.scaffold.urlopen', side_effect=mock_urlopen),
             patch('pypkgkit.scaffold.subprocess') as mock_sub,
+            patch(
+                'pypkgkit.scaffold.check_git_installed',
+                return_value=True,
+            ),
+            patch('pypkgkit.scaffold.git_init', return_value=0),
         ):
             mock_sub.run.return_value = MagicMock(returncode=0)
             result = scaffold(str(target), init_args=['--name', 'my-pkg'])
