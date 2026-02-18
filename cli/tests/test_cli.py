@@ -2,7 +2,10 @@
 
 from __future__ import annotations
 
+import runpy
 from unittest.mock import patch
+
+import pytest
 
 from pypkgkit.cli import (
     _build_passthrough_args,
@@ -158,3 +161,23 @@ class TestMain:
         assert kwargs['github'] is False
         assert kwargs['private'] is False
         assert kwargs['require_reviews'] == 0
+
+
+class TestMainModule:
+    """Tests for __main__.py entry point."""
+
+    def test_main_module_exits_with_main_return_value(self):
+        """Test that __main__ calls sys.exit with main() return value."""
+        with (
+            patch('pypkgkit.cli.main', return_value=1),
+            pytest.raises(SystemExit, match='1'),
+        ):
+            runpy.run_module('pypkgkit', run_name='__main__', alter_sys=True)
+
+    def test_main_module_exits_zero_on_success(self):
+        """Test that __main__ exits 0 when main() returns 0."""
+        with (
+            patch('pypkgkit.cli.main', return_value=0),
+            pytest.raises(SystemExit, match='0'),
+        ):
+            runpy.run_module('pypkgkit', run_name='__main__', alter_sys=True)

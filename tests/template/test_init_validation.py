@@ -123,6 +123,38 @@ class TestEscapeTomlString:
 
 
 # ===================================================================
+# escape_yaml_string
+# ===================================================================
+
+
+class TestEscapeYamlString:
+    """Tests for escape_yaml_string."""
+
+    def test_escape_yaml_string_plain_text(self, init_mod):
+        """Test that plain text is wrapped in single quotes."""
+        assert init_mod.escape_yaml_string('hello world') == "'hello world'"
+
+    def test_escape_yaml_string_with_hash(self, init_mod):
+        """Test that strings with # are safely quoted."""
+        result = init_mod.escape_yaml_string('A # comment breaker')
+        assert result == "'A # comment breaker'"
+
+    def test_escape_yaml_string_with_colon(self, init_mod):
+        """Test that strings with : are safely quoted."""
+        result = init_mod.escape_yaml_string('key: value style')
+        assert result == "'key: value style'"
+
+    def test_escape_yaml_string_with_single_quotes(self, init_mod):
+        """Test that internal single quotes are doubled."""
+        result = init_mod.escape_yaml_string("it's great")
+        assert result == "'it''s great'"
+
+    def test_escape_yaml_string_empty(self, init_mod):
+        """Test that empty string returns empty single-quoted pair."""
+        assert init_mod.escape_yaml_string('') == "''"
+
+
+# ===================================================================
 # validate_name
 # ===================================================================
 
