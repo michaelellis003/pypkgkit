@@ -1,7 +1,7 @@
 """Fixtures for template-specific tests.
 
 These tests verify the template infrastructure itself (file structure,
-init.sh behavior). They are automatically removed when init.sh runs.
+init.py behavior). They are automatically removed when init.py runs.
 """
 
 import shutil
@@ -38,7 +38,7 @@ def template_dir() -> Path:
 
 @pytest.fixture
 def init_project(tmp_path: Path, template_dir: Path):
-    """Factory fixture: copy repo to tmpdir and run init.sh.
+    """Factory fixture: copy repo to tmpdir and run init.py.
 
     Returns a callable that accepts optional extra CLI flags
     (e.g. ``['--license', 'mit']``) and returns the tmpdir Path.
@@ -46,7 +46,7 @@ def init_project(tmp_path: Path, template_dir: Path):
 
     def _run(
         extra_flags: list[str] | None = None,
-        stdin_text: str = 'n\ny\n',
+        stdin_text: str = 'y\n',
     ) -> Path:
         project = tmp_path / 'project'
         shutil.copytree(
@@ -55,11 +55,12 @@ def init_project(tmp_path: Path, template_dir: Path):
             ignore=_ignore_dirs,
         )
 
-        # Ensure init.sh is executable
-        init_script = project / 'scripts' / 'init.sh'
-        init_script.chmod(0o755)
+        init_script = project / 'scripts' / 'init.py'
 
         cmd = [
+            'uv',
+            'run',
+            '--script',
             str(init_script),
             '--name',
             'test-pkg',
@@ -81,12 +82,12 @@ def init_project(tmp_path: Path, template_dir: Path):
             input=stdin_text,
             capture_output=True,
             text=True,
-            timeout=30,
+            timeout=60,
         )
 
         if result.returncode != 0:
             msg = (
-                f'init.sh failed (rc={result.returncode})\n'
+                f'init.py failed (rc={result.returncode})\n'
                 f'STDOUT:\n{result.stdout}\n'
                 f'STDERR:\n{result.stderr}'
             )

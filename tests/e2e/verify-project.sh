@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 # verify-project.sh — runs inside the Docker container
 #
-# Copies the template, runs init.sh, then verifies the initialized
+# Copies the template, runs init.py, then verifies the initialized
 # project actually works: uv sync, pytest, import, build, pre-commit.
 #
 # Usage: verify-project.sh <license>
@@ -52,13 +52,13 @@ cp -r /workspace/template /workspace/project
 cd /workspace/project
 
 # ---------------------------------------------------------------------------
-# 2. Run init.sh
+# 2. Run init.py
 # ---------------------------------------------------------------------------
 
-printf "${CYAN}==> Running init.sh --license %s ...${NC}\n" "$LICENSE"
+printf "${CYAN}==> Running init.py --license %s ...${NC}\n" "$LICENSE"
 
-# init.sh with flags still prompts for: PyPI publishing + confirmation
-printf 'n\ny\n' | bash ./scripts/init.sh \
+# init.py in non-interactive mode only reads confirmation from stdin
+printf 'y\n' | uv run --script ./scripts/init.py \
     --name test-pkg \
     --author "E2E Tester" \
     --email "e2e@test.com" \
@@ -67,10 +67,10 @@ printf 'n\ny\n' | bash ./scripts/init.sh \
     --license "$LICENSE"
 
 # ---------------------------------------------------------------------------
-# 3. Verify init.sh outputs
+# 3. Verify init.py outputs
 # ---------------------------------------------------------------------------
 
-printf "\n${CYAN}==> Checking init.sh results...${NC}\n"
+printf "\n${CYAN}==> Checking init.py results...${NC}\n"
 
 # Package directory was renamed
 if [ -d "test_pkg" ]; then
@@ -79,11 +79,11 @@ else
     fail "Package directory test_pkg/ not found"
 fi
 
-# init.sh removed itself
-if [ ! -f "scripts/init.sh" ]; then
-    pass "init.sh self-deleted"
+# init.py removed itself (and init.sh)
+if [ ! -f "scripts/init.py" ] && [ ! -f "scripts/init.sh" ]; then
+    pass "init scripts self-deleted"
 else
-    fail "init.sh still exists"
+    fail "init scripts still exist"
 fi
 
 # Template tests removed
@@ -107,18 +107,18 @@ else
     fail "CODEOWNERS still has template author"
 fi
 
-# docs/index.md rewritten (no init.sh reference)
-if ! grep -q 'init\.sh' docs/index.md 2>/dev/null; then
-    pass "docs/index.md has no init.sh reference"
+# docs/index.md rewritten (no init script reference)
+if ! grep -qE 'init\.(sh|py)' docs/index.md 2>/dev/null; then
+    pass "docs/index.md has no init script reference"
 else
-    fail "docs/index.md still references init.sh"
+    fail "docs/index.md still references init script"
 fi
 
-# docs/publishing.md cleaned (no init.sh reference)
-if ! grep -q 'init\.sh' docs/publishing.md 2>/dev/null; then
-    pass "docs/publishing.md has no init.sh reference"
+# docs/publishing.md cleaned (no init script reference)
+if ! grep -qE 'init\.(sh|py)' docs/publishing.md 2>/dev/null; then
+    pass "docs/publishing.md has no init script reference"
 else
-    fail "docs/publishing.md still references init.sh"
+    fail "docs/publishing.md still references init script"
 fi
 
 # .claude/rules/testing.md has no "Template Tests" section
@@ -128,18 +128,19 @@ else
     fail "testing.md still has Template Tests section"
 fi
 
-# .claude/rules/code-style.md has no init.sh reference
-if ! grep -q 'init\.sh' .claude/rules/code-style.md 2>/dev/null; then
-    pass "code-style.md has no init.sh reference"
+# .claude/rules/code-style.md has no init script reference
+if ! grep -qE 'init\.(sh|py)' .claude/rules/code-style.md 2>/dev/null; then
+    pass "code-style.md has no init script reference"
 else
-    fail "code-style.md still references init.sh"
+    fail "code-style.md still references init script"
 fi
 
-# README.md has no init.sh reference (outside template-only markers, which are gone)
-if ! grep -q 'init\.sh' README.md 2>/dev/null; then
-    pass "README.md has no init.sh reference"
+# README.md has no init script reference (outside template-only markers, which are gone)
+# Exclude test_init.py / test_init_*.py file names (legitimate project files)
+if ! grep -E 'init\.(sh|py)' README.md 2>/dev/null | grep -qvE 'test_init'; then
+    pass "README.md has no init script reference"
 else
-    fail "README.md still references init.sh"
+    fail "README.md still references init script"
 fi
 
 # Package name replaced in pyproject.toml

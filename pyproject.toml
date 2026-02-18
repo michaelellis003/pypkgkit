@@ -125,6 +125,7 @@ lines-between-types = 0
 
 [tool.ruff.lint.per-file-ignores]
 "tests/*" = ["D", "S101", "S603", "PLR2004", "ARG"]
+"scripts/*" = ["T20", "S310", "S603", "S607", "BLE001"]
 "__init__.py" = ["F401"]
 "__main__.py" = ["T20"]
 
