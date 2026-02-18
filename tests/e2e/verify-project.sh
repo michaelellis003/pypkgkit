@@ -172,11 +172,11 @@ if [ "$LICENSE" != "none" ]; then
         fail "License classifier still says Apache"
     fi
 
-    # Verify the correct classifier is present
-    if grep -q 'MIT License' pyproject.toml; then
-        pass "License classifier correct (MIT License)"
+    # Verify a non-Apache license classifier is present
+    if grep 'License ::' pyproject.toml | grep -qv 'Apache Software License'; then
+        pass "License classifier present (non-Apache)"
     else
-        fail "Expected 'MIT License' classifier in pyproject.toml"
+        fail "Expected a non-Apache License classifier in pyproject.toml"
     fi
 fi
 

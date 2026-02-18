@@ -232,6 +232,21 @@ def escape_toml_string(value: str) -> str:
     return value.replace('"', '\\"')
 
 
+def escape_yaml_string(value: str) -> str:
+    """Wrap a value in YAML single quotes, escaping internal quotes.
+
+    YAML escapes single quotes by doubling them (``'`` → ``''``).
+
+    Args:
+        value: Raw string to escape.
+
+    Returns:
+        YAML-safe single-quoted string.
+    """
+    escaped = value.replace("'", "''")
+    return f"'{escaped}'"
+
+
 # ---------------------------------------------------------------------------
 # Validation
 # ---------------------------------------------------------------------------
@@ -607,7 +622,9 @@ def update_description(root: Path, config: ProjectConfig) -> None:
 
     meta_yaml = root / 'recipe' / 'meta.yaml'
     if meta_yaml.exists():
-        replace_in_file(meta_yaml, _TEMPLATE_DESC, config.description)
+        replace_in_file(
+            meta_yaml, _TEMPLATE_DESC, escape_yaml_string(config.description)
+        )
 
 
 def setup_license_metadata(
