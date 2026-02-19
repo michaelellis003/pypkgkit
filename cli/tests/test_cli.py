@@ -8,7 +8,8 @@ from unittest.mock import patch
 import pytest
 
 from pypkgkit.cli import (
-    _build_passthrough_args,
+    _collect_config_kwargs,
+    _needs_interactive,
     main,
     parse_args,
 )
@@ -70,7 +71,7 @@ class TestParseArgs:
         assert ns.require_reviews == 0
 
 
-class TestBuildPassthroughArgs:
+class TestCollectConfigKwargs:
     def test_with_all_flags(self):
         ns = parse_args(
             [
@@ -91,20 +92,41 @@ class TestBuildPassthroughArgs:
                 '--pypi',
             ]
         )
-        args = _build_passthrough_args(ns)
-        assert '--name' in args
-        assert 'my-pkg' in args
-        assert '--author' in args
-        assert 'Jane' in args
-        assert '--email' in args
-        assert '--license' in args
-        assert 'mit' in args
-        assert '--pypi' in args
+        kwargs = _collect_config_kwargs(ns)
+        assert kwargs['name'] == 'my-pkg'
+        assert kwargs['author'] == 'Jane'
+        assert kwargs['email'] == 'j@e.com'
+        assert kwargs['github_owner'] == 'jane'
+        assert kwargs['description'] == 'Desc'
+        assert kwargs['license_key'] == 'mit'
+        assert kwargs['enable_pypi'] is True
 
     def test_with_no_flags(self):
         ns = parse_args(['new', 'my-project'])
-        args = _build_passthrough_args(ns)
-        assert args == []
+        kwargs = _collect_config_kwargs(ns)
+        assert kwargs['name'] is None
+        assert kwargs['author'] is None
+        assert kwargs['email'] is None
+        assert kwargs['github_owner'] is None
+        assert kwargs['description'] is None
+        assert kwargs['license_key'] is None
+        assert kwargs['enable_pypi'] is None
+
+
+class TestNeedsInteractive:
+    def test_returns_true_when_fields_missing(self):
+        kwargs = {'name': 'pkg', 'author': None}
+        assert _needs_interactive(kwargs) is True
+
+    def test_returns_false_when_all_present(self):
+        kwargs = {
+            'name': 'pkg',
+            'author': 'Jane',
+            'email': 'j@e.com',
+            'github_owner': 'jane',
+            'description': 'Desc',
+        }
+        assert _needs_interactive(kwargs) is False
 
 
 class TestMain:
@@ -117,13 +139,24 @@ class TestMain:
                     '/tmp/test-proj',
                     '--name',
                     'my-pkg',
+                    '--author',
+                    'Jane',
+                    '--email',
+                    'j@e.com',
+                    '--github-owner',
+                    'jane',
+                    '--description',
+                    'Desc',
+                    '--license',
+                    'mit',
                 ]
             )
 
         assert rc == 0
         mock_scaffold.assert_called_once()
-        call_kwargs = mock_scaffold.call_args
-        assert call_kwargs[0][0] == '/tmp/test-proj'
+        call_args = mock_scaffold.call_args
+        assert call_args[0][0] == '/tmp/test-proj'
+        assert 'config_kwargs' in call_args[1]
 
     def test_new_passes_github_flags_to_scaffold(self):
         with patch('pypkgkit.cli.scaffold') as mock_scaffold:
@@ -161,6 +194,42 @@ class TestMain:
         assert kwargs['github'] is False
         assert kwargs['private'] is False
         assert kwargs['require_reviews'] == 0
+
+    def test_interactive_true_when_missing_fields_and_tty(self):
+        with (
+            patch('pypkgkit.cli.scaffold') as mock_scaffold,
+            patch('pypkgkit.cli.is_interactive', return_value=True),
+        ):
+            mock_scaffold.return_value = 0
+            main(['new', '/tmp/test-proj'])
+
+        kwargs = mock_scaffold.call_args[1]
+        assert kwargs['interactive'] is True
+
+    def test_interactive_false_when_all_fields_provided(self):
+        with patch('pypkgkit.cli.scaffold') as mock_scaffold:
+            mock_scaffold.return_value = 0
+            main(
+                [
+                    'new',
+                    '/tmp/test-proj',
+                    '--name',
+                    'pkg',
+                    '--author',
+                    'Jane',
+                    '--email',
+                    'j@e.com',
+                    '--github-owner',
+                    'jane',
+                    '--description',
+                    'Desc',
+                    '--license',
+                    'mit',
+                ]
+            )
+
+        kwargs = mock_scaffold.call_args[1]
+        assert kwargs['interactive'] is False
 
 
 class TestMainModule:

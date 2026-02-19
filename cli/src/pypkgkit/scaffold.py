@@ -4,13 +4,15 @@ from __future__ import annotations
 
 import json
 import shutil
-import subprocess
 import sys
 import tarfile
 from pathlib import Path
+from types import ModuleType
 from urllib.error import HTTPError, URLError
 from urllib.request import urlopen
 
+from pypkgkit import __version__
+from pypkgkit import defaults as _defaults
 from pypkgkit.github import (
     check_gh_authenticated,
     check_gh_installed,
@@ -18,6 +20,20 @@ from pypkgkit.github import (
     detect_gh_owner,
     git_init,
     setup_github,
+)
+from pypkgkit.init_bridge import load_init_module, run_init
+from pypkgkit.prompt import (
+    print_bar,
+    print_divider,
+    print_field,
+    print_header,
+    print_next_steps,
+    print_outro,
+    print_step,
+    print_welcome,
+    prompt_choice,
+    prompt_confirm,
+    prompt_text,
 )
 
 REPO_OWNER = 'michaelellis003'
@@ -122,30 +138,6 @@ def move_template_to_target(src: Path, target: Path) -> None:
     shutil.move(str(src), str(target))
 
 
-def invoke_init(project_dir: Path, args: list[str]) -> int:
-    """Run ``scripts/init.py`` in the project directory.
-
-    Args:
-        project_dir: Root of the extracted template.
-        args: Extra CLI arguments for init.py.
-
-    Returns:
-        Process return code.
-
-    Raises:
-        FileNotFoundError: If ``scripts/init.py`` does not exist
-            or ``uv`` is not installed.
-    """
-    init_py = project_dir / 'scripts' / 'init.py'
-    if not init_py.exists():
-        msg = f'scripts/init.py not found in {project_dir}'
-        raise FileNotFoundError(msg)
-
-    cmd = ['uv', 'run', '--script', str(init_py), *args]
-    result = subprocess.run(cmd, cwd=project_dir)  # noqa: S603
-    return result.returncode
-
-
 def _resolve_tag(template_version: str | None) -> str:
     """Resolve the release tag to download.
 
@@ -205,11 +197,124 @@ def _download_and_extract(tag: str, target_path: Path) -> int:
     return 0
 
 
+def _prompt_missing_config(
+    init_mod: ModuleType,
+    config_kwargs: dict,
+    target_name: str,
+) -> dict:
+    """Fill in missing config fields via interactive prompts.
+
+    Uses validators from the loaded init module where available.
+
+    Args:
+        init_mod: The loaded ``scripts/init.py`` module.
+        config_kwargs: Partially-filled config dict (None = missing).
+        target_name: Project directory name for deriving defaults.
+
+    Returns:
+        Complete config dict with all required fields.
+    """
+    result = dict(config_kwargs)
+
+    # Detect defaults
+    default_name = result.get('name') or _defaults.derive_package_name(
+        target_name
+    )
+    default_author = result.get('author') or _defaults.detect_git_user_name()
+    default_email = result.get('email') or _defaults.detect_git_user_email()
+    default_owner = result.get('github_owner') or _defaults.detect_gh_owner()
+
+    # Get validators from init module
+    v_name = getattr(init_mod, 'validate_name', None)
+    v_email = getattr(init_mod, 'validate_email', None)
+    v_author = getattr(init_mod, 'validate_author_name', None)
+    v_owner = getattr(init_mod, 'validate_github_owner', None)
+    v_desc = getattr(init_mod, 'validate_description', None)
+
+    print_welcome(__version__)
+    print_header('New Project Setup')
+
+    if not result.get('name'):
+        result['name'] = prompt_text(
+            'Package name',
+            default=default_name,
+            validator=v_name,
+        )
+
+    if not result.get('author'):
+        result['author'] = prompt_text(
+            'Author name',
+            default=default_author,
+            validator=v_author,
+        )
+
+    if not result.get('email'):
+        result['email'] = prompt_text(
+            'Author email',
+            default=default_email,
+            validator=v_email,
+        )
+
+    if not result.get('github_owner'):
+        result['github_owner'] = prompt_text(
+            'GitHub owner',
+            default=default_owner,
+            validator=v_owner,
+        )
+
+    if not result.get('description'):
+        result['description'] = prompt_text(
+            'Description',
+            validator=v_desc,
+        )
+
+    if not result.get('enable_pypi'):
+        result['enable_pypi'] = prompt_confirm(
+            'Enable PyPI publishing?', default=False
+        )
+
+    # License selection
+    if not result.get('license_key'):
+        offline = getattr(init_mod, 'OFFLINE_LICENSES', ())
+        options = ['Skip (keep Apache-2.0)']
+        license_keys = ['none']
+        for lic in offline:
+            options.append(f'{lic.name} ({lic.key})')
+            license_keys.append(lic.key)
+        idx = prompt_choice('Select a license', options)
+        result['license_key'] = license_keys[idx]
+
+    # Summary
+    print_divider()
+    print_field('Package name', result.get('name', ''))
+    print_field(
+        'Author',
+        f'{result.get("author", "")} <{result.get("email", "")}>',
+    )
+    print_field(
+        'GitHub repo',
+        f'{result.get("github_owner", "")}/{result.get("name", "")}',
+    )
+    print_field('Description', result.get('description', ''))
+    pypi_str = 'yes' if result.get('enable_pypi') else 'no'
+    print_field('PyPI', pypi_str)
+    print_field('License', result.get('license_key', 'none'))
+    print_divider()
+    print_bar()
+
+    if not prompt_confirm('Proceed?', default=True):
+        print('  Aborted.')
+        raise SystemExit(0)
+
+    return result
+
+
 def scaffold(
     target: str,
     *,
     template_version: str | None = None,
-    init_args: list[str] | None = None,
+    config_kwargs: dict | None = None,
+    interactive: bool = False,
     github: bool = False,
     github_owner: str | None = None,
     private: bool = False,
@@ -221,7 +326,8 @@ def scaffold(
     Args:
         target: Directory name for the new project.
         template_version: Pin a specific release tag.
-        init_args: Extra arguments for ``scripts/init.py``.
+        config_kwargs: Init config fields (None values = prompt).
+        interactive: Run interactive prompts for missing fields.
         github: Create a GitHub repository and configure rulesets.
         github_owner: GitHub username or org (auto-detected if omitted).
         private: Create a private GitHub repository.
@@ -252,10 +358,10 @@ def scaffold(
                     'Use --github-owner to specify.'
                 )
 
-    # Build effective init_args with auto-detected owner
-    effective_init_args = list(init_args or [])
-    if github and github_owner and '--github-owner' not in effective_init_args:
-        effective_init_args.extend(['--github-owner', github_owner])
+    # Inject github_owner into config_kwargs if auto-detected
+    effective_kwargs = dict(config_kwargs or {})
+    if github and github_owner:
+        effective_kwargs.setdefault('github_owner', github_owner)
 
     try:
         tag = _resolve_tag(template_version)
@@ -269,21 +375,34 @@ def scaffold(
     except URLError as exc:
         return _err(f'Network error: {exc.reason}')
 
+    if not interactive:
+        print_bar()
+
+    print_step(f'Downloading template ({tag})')
     rc = _download_and_extract(tag, target_path)
     if rc != 0:
         return rc
 
+    # Load init module from the downloaded template
     try:
-        rc = invoke_init(target_path, effective_init_args)
-        if rc != 0:
-            return rc
+        init_mod = load_init_module(target_path)
     except FileNotFoundError as exc:
-        if 'uv' in str(exc).lower() or 'No such file' in str(exc):
-            return _err(
-                'uv is not installed. '
-                'Install it from https://docs.astral.sh/uv/'
-            )
         return _err(str(exc))
+
+    # Interactive prompts for missing fields
+    if interactive:
+        try:
+            effective_kwargs = _prompt_missing_config(
+                init_mod, effective_kwargs, target_path.name
+            )
+        except SystemExit as exc:
+            return exc.code if isinstance(exc.code, int) else 1
+
+    # Run init_project via bridge
+    if not run_init(target_path, effective_kwargs):
+        return _err('Project initialization failed')
+
+    print_step('Updating references')
 
     # Always: git init
     if not check_git_installed():
@@ -291,6 +410,8 @@ def scaffold(
     rc = git_init(target_path)
     if rc != 0:
         return _err('git init failed')
+
+    print_step('Initializing git repository')
 
     # Conditional: GitHub setup
     if github and github_owner is not None:
@@ -304,5 +425,17 @@ def scaffold(
         )
         if rc != 0:
             return rc
+        print_step('Creating GitHub repository')
+
+    print_bar()
+    print_outro('Done! Your package is ready.')
+
+    print_next_steps(
+        [
+            f'cd {target_path.name}',
+            'uv sync',
+            'uv run pytest -v --cov',
+        ]
+    )
 
     return 0

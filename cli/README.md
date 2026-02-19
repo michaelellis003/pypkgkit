@@ -51,7 +51,7 @@ pypkgkit --version
 1. Fetches the latest release tag from the GitHub API
 2. Downloads the release tarball (no API rate limit)
 3. Extracts to the target directory
-4. Runs `scripts/init.py` via `uv run --script` to initialize the project
+4. Collects missing fields via styled interactive prompts (with smart defaults from `git config` and `gh api user`), then loads and runs `scripts/init.py` directly to initialize the project
 5. Initializes a git repository with an initial commit
 6. *(with `--github`)* Creates a GitHub repository via `gh` CLI
 7. *(with `--github`)* Pushes to GitHub
