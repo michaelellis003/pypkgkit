@@ -6,6 +6,7 @@ import argparse
 import sys
 
 from pypkgkit import __version__
+from pypkgkit.prompt import is_interactive
 from pypkgkit.scaffold import scaffold
 
 
@@ -74,31 +75,48 @@ def parse_args(argv: list[str] | None = None) -> argparse.Namespace:
     return parser.parse_args(argv)
 
 
-def _build_passthrough_args(ns: argparse.Namespace) -> list[str]:
-    """Build init.py argument list from parsed namespace.
+_CONFIG_FIELDS = (
+    'name',
+    'author',
+    'email',
+    'github_owner',
+    'description',
+)
+
+
+def _collect_config_kwargs(ns: argparse.Namespace) -> dict:
+    """Extract init config fields from parsed namespace.
 
     Args:
         ns: Parsed CLI namespace from ``parse_args``.
 
     Returns:
-        List of arguments to pass to ``scripts/init.py``.
+        Dict of config kwargs. Missing fields have None values.
     """
-    args: list[str] = []
-    if getattr(ns, 'name', None):
-        args.extend(['--name', ns.name])
-    if getattr(ns, 'author', None):
-        args.extend(['--author', ns.author])
-    if getattr(ns, 'email', None):
-        args.extend(['--email', ns.email])
-    if getattr(ns, 'github_owner', None):
-        args.extend(['--github-owner', ns.github_owner])
-    if getattr(ns, 'description', None):
-        args.extend(['--description', ns.description])
-    if getattr(ns, 'license', None):
-        args.extend(['--license', ns.license])
-    if getattr(ns, 'pypi', False):
-        args.append('--pypi')
-    return args
+    kwargs: dict = {}
+    for field in _CONFIG_FIELDS:
+        kwargs[field] = getattr(ns, field, None)
+
+    # license flag maps to license_key
+    kwargs['license_key'] = getattr(ns, 'license', None)
+
+    # pypi flag maps to enable_pypi
+    kwargs['enable_pypi'] = getattr(ns, 'pypi', False) or None
+
+    return kwargs
+
+
+def _needs_interactive(kwargs: dict) -> bool:
+    """Check whether interactive prompts are needed.
+
+    Args:
+        kwargs: Config kwargs dict.
+
+    Returns:
+        True if any required field is None.
+    """
+    required = ('name', 'author', 'email', 'github_owner', 'description')
+    return any(kwargs.get(f) is None for f in required)
 
 
 def main(argv: list[str] | None = None) -> int:
@@ -120,13 +138,15 @@ def main(argv: list[str] | None = None) -> int:
         parse_args(['--help'])
         return 1  # pragma: no cover
 
-    init_args = _build_passthrough_args(ns)
+    config_kwargs = _collect_config_kwargs(ns)
+    interactive = _needs_interactive(config_kwargs) and is_interactive()
     template_version = getattr(ns, 'template_version', None)
 
     return scaffold(
         ns.project_dir,
         template_version=template_version,
-        init_args=init_args,
+        config_kwargs=config_kwargs,
+        interactive=interactive,
         github=getattr(ns, 'github', False),
         github_owner=getattr(ns, 'github_owner', None),
         private=getattr(ns, 'private', False),
