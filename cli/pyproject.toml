@@ -36,6 +36,7 @@ dev = [
     "pytest>=8.3.4",
     "pyright>=1.1.408",
     "pytest-cov>=6.0.0",
+    "python-semantic-release>=10.2.0",
     "ruff>=0.15.1",
 ]
 
@@ -108,3 +109,14 @@ exclude_lines = [
     "if TYPE_CHECKING:",
     "@overload",
 ]
+
+[tool.semantic_release]
+version_toml = ["pyproject.toml:project.version"]
+tag_format = "pypkgkit/v{version}"
+branch = "main"
+commit_message = "chore(cli-release): pypkgkit v{version}"
+build_command = """
+    uv lock --upgrade-package pypkgkit
+    git add uv.lock
+    uv build
+"""
