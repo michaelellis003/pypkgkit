@@ -73,6 +73,8 @@ convention = "google"
 "src/pypkgkit/github.py" = ["T20", "S603", "S607", "PLR0913"]
 "src/pypkgkit/cli.py" = ["T20"]
 "src/pypkgkit/__main__.py" = ["T20"]
+"src/pypkgkit/prompt.py" = ["T20"]
+"src/pypkgkit/defaults.py" = ["S603", "S607"]
 
 [tool.ruff.format]
 quote-style = "single"
