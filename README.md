@@ -1,5 +1,6 @@
 # Python Package Template
 
+[![CI](https://github.com/michaelellis003/uv-python-template/actions/workflows/ci.yml/badge.svg)](https://github.com/michaelellis003/uv-python-template/actions/workflows/ci.yml)
 [![](https://img.shields.io/badge/Python-3.10|3.11|3.12|3.13-blue)](https://www.python.org)
 [![uv](https://img.shields.io/endpoint?url=https://raw.githubusercontent.com/astral-sh/uv/main/assets/badge/v0.json)](https://github.com/astral-sh/uv)
 [![Ruff](https://img.shields.io/endpoint?url=https://raw.githubusercontent.com/astral-sh/ruff/main/assets/badge/v2.json)](https://github.com/astral-sh/ruff)
