@@ -8,6 +8,7 @@
 #
 # Prerequisites:
 #   - gh CLI installed and authenticated (https://cli.github.com)
+#   - jq installed (https://jqlang.github.io/jq/)
 #   - Admin access to the target repository
 #
 # Usage:
@@ -44,6 +45,13 @@ while [[ $# -gt 0 ]]; do
     esac
 done
 
+# Validate --require-reviews is an integer 0-10
+if ! [[ "$REQUIRED_REVIEWS" =~ ^[0-9]+$ ]] || \
+   [[ "$REQUIRED_REVIEWS" -gt 10 ]]; then
+    echo "Error: --require-reviews must be an integer 0-10." >&2
+    exit 1
+fi
+
 # Detect repo from git remote
 REPO=$(gh repo view --json nameWithOwner --jq '.nameWithOwner' 2>/dev/null) || {
     echo "Error: could not detect repository." >&2
@@ -53,56 +61,57 @@ REPO=$(gh repo view --json nameWithOwner --jq '.nameWithOwner' 2>/dev/null) || {
 
 echo "Configuring repository ruleset for ${REPO} (main)..."
 
-# Build the ruleset payload
-PAYLOAD=$(cat <<EOF
-{
-  "name": "${RULESET_NAME}",
-  "target": "branch",
-  "enforcement": "active",
-  "conditions": {
-    "ref_name": {
-      "include": ["refs/heads/main"],
-      "exclude": []
-    }
-  },
-  "bypass_actors": [
-    {
-      "actor_id": 5,
-      "actor_type": "RepositoryRole",
-      "bypass_mode": "always"
-    }
-  ],
-  "rules": [
-    {
-      "type": "pull_request",
-      "parameters": {
-        "required_approving_review_count": ${REQUIRED_REVIEWS},
-        "dismiss_stale_reviews_on_push": false,
-        "require_code_owner_review": false,
-        "require_last_push_approval": false,
-        "required_review_thread_resolution": false
-      }
-    },
-    {
-      "type": "required_status_checks",
-      "parameters": {
-        "strict_required_status_checks_policy": true,
-        "required_status_checks": [
-          { "context": "ci-pass" }
+# Build the ruleset payload using jq for safe JSON construction
+PAYLOAD=$(jq -n \
+    --arg name "$RULESET_NAME" \
+    --argjson reviews "$REQUIRED_REVIEWS" \
+    '{
+        name: $name,
+        target: "branch",
+        enforcement: "active",
+        conditions: {
+            ref_name: {
+                include: ["refs/heads/main"],
+                exclude: []
+            }
+        },
+        bypass_actors: [
+            {
+                actor_id: 5,
+                actor_type: "RepositoryRole",
+                bypass_mode: "always"
+            }
+        ],
+        rules: [
+            {
+                type: "pull_request",
+                parameters: {
+                    required_approving_review_count: $reviews,
+                    dismiss_stale_reviews_on_push: false,
+                    require_code_owner_review: false,
+                    require_last_push_approval: false,
+                    required_review_thread_resolution: false
+                }
+            },
+            {
+                type: "required_status_checks",
+                parameters: {
+                    strict_required_status_checks_policy: true,
+                    required_status_checks: [
+                        { context: "ci-pass" }
+                    ]
+                }
+            },
+            { type: "non_fast_forward" },
+            { type: "deletion" }
         ]
-      }
-    },
-    { "type": "non_fast_forward" },
-    { "type": "deletion" }
-  ]
-}
-EOF
-)
+    }')
 
 # Check if a ruleset with this name already exists
 EXISTING_ID=$(
-    gh api "repos/${REPO}/rulesets" --jq \
-        ".[] | select(.name == \"${RULESET_NAME}\") | .id" 2>/dev/null
+    gh api "repos/${REPO}/rulesets" 2>/dev/null \
+        | jq -r --arg name "$RULESET_NAME" \
+            '.[] | select(.name == $name) | .id'
 ) || EXISTING_ID=""
 
 if [[ -n "$EXISTING_ID" ]]; then
