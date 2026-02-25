@@ -77,27 +77,15 @@ jobs:
         if: steps.version.outputs.released == 'true'
         run: uvx twine check dist/*
 
-      # To publish to PyPI using trusted publishing (OIDC):
-      #   1. Create a PyPI account at https://pypi.org/account/register/
-      #   2. Go to https://pypi.org/manage/account/publishing/
-      #   3. Add a trusted publisher:
-      #        Owner: <your-github-owner>
-      #        Repository: <your-repo-name>
-      #        Workflow name: release.yml
-      #        Environment: (leave blank)
-      #   4. Run init.py with --pypi, or uncomment the steps below.
-      #
-      # PYPI-START
-      # - name: Publish to PyPI
-      #   if: steps.version.outputs.released == 'true'
-      #   uses: pypa/gh-action-pypi-publish@ed0c53931b1dc9bd32cbe73a98c7f6766f8a527e  # release/v1
-      #   with:
-      #     packages-dir: dist/
-      #     attestations: true
-      #
-      # - name: Attest build provenance
-      #   if: steps.version.outputs.released == 'true'
-      #   uses: actions/attest-build-provenance@v2
-      #   with:
-      #     subject-path: dist/*
-      # PYPI-END
+      - name: Publish to PyPI
+        if: steps.version.outputs.released == 'true'
+        uses: pypa/gh-action-pypi-publish@ed0c53931b1dc9bd32cbe73a98c7f6766f8a527e  # release/v1
+        with:
+          packages-dir: dist/
+          attestations: true
+
+      - name: Attest build provenance
+        if: steps.version.outputs.released == 'true'
+        uses: actions/attest-build-provenance@v2
+        with:
+          subject-path: dist/*
