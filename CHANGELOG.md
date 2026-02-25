@@ -2,6 +2,26 @@
 
 <!-- version list -->
 
+## v1.10.4 (2026-02-25)
+
+### Bug Fixes
+
+- **ci**: Pin attest-build-provenance to commit SHA
+  ([#39](https://github.com/michaelellis003/uv-python-template/pull/39),
+  [`834363d`](https://github.com/michaelellis003/uv-python-template/commit/834363dc3a8d70550389c8c96bd7d678eba7c69b))
+
+### Chores
+
+- **cli-release**: Pypkgkit v1.0.1
+  ([`314b39f`](https://github.com/michaelellis003/uv-python-template/commit/314b39f9a7eed1f195d6cbac501d321bbd91fca3))
+
+### Continuous Integration
+
+- **release**: Enable PyPI trusted publishing and build attestations
+  ([#38](https://github.com/michaelellis003/uv-python-template/pull/38),
+  [`faf3f11`](https://github.com/michaelellis003/uv-python-template/commit/faf3f114b9f8124cd5404ca113039726fbf4e428))
+
+
 ## v1.10.3 (2026-02-25)
 
 ### Bug Fixes
