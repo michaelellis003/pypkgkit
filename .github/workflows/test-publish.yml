@@ -12,7 +12,7 @@ jobs:
     timeout-minutes: 15
     steps:
       - name: Checkout
-        uses: actions/checkout@v6
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd  # v6
 
       - name: Setup uv
         uses: ./.github/actions/setup-uv
@@ -36,7 +36,7 @@ jobs:
       #   4. Remove the '#' from the step below and commit
       #
       # - name: Publish to TestPyPI
-      #   uses: pypa/gh-action-pypi-publish@release/v1
+      #   uses: pypa/gh-action-pypi-publish@ed0c53931b1dc9bd32cbe73a98c7f6766f8a527e  # release/v1
       #   with:
       #     repository-url: https://test.pypi.org/legacy/
       #     packages-dir: dist/

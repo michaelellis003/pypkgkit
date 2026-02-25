@@ -91,7 +91,8 @@ def download_tarball(url: str, dest: Path) -> Path:
 def extract_tarball(path: Path, dest: Path) -> Path:
     """Extract a tarball and return the inner directory.
 
-    Validates every member path to reject path-traversal attacks.
+    Validates every member to reject path-traversal attacks,
+    symlinks, and hardlinks.
 
     Args:
         path: Path to the ``.tar.gz`` file.
@@ -101,7 +102,8 @@ def extract_tarball(path: Path, dest: Path) -> Path:
         Path to the single top-level directory inside the archive.
 
     Raises:
-        ValueError: If any member has ``..`` or an absolute path.
+        ValueError: If any member has ``..``, an absolute path,
+            or is a symlink/hardlink.
     """
     with tarfile.open(path, 'r:gz') as tf:
         for member in tf.getmembers():
@@ -109,6 +111,12 @@ def extract_tarball(path: Path, dest: Path) -> Path:
             if member_path.is_absolute() or '..' in member_path.parts:
                 msg = (
                     f'Refusing to extract: path traversal '
+                    f'detected in {member.name!r}'
+                )
+                raise ValueError(msg)
+            if member.issym() or member.islnk():
+                msg = (
+                    f'Refusing to extract: symlink or hardlink '
                     f'detected in {member.name!r}'
                 )
                 raise ValueError(msg)
