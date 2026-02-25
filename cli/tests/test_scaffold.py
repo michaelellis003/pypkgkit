@@ -112,6 +112,36 @@ class TestExtractTarball:
         with pytest.raises(ValueError, match='path traversal'):
             extract_tarball(tarball_path, dest)
 
+    def test_rejects_symlink(self, tmp_path: Path):
+        """Test that symlinks in tarball are rejected."""
+        tarball_path = tmp_path / 'symlink.tar.gz'
+        with tarfile.open(tarball_path, 'w:gz') as tf:
+            info = tarfile.TarInfo('proj/link')
+            info.type = tarfile.SYMTYPE
+            info.linkname = '/etc/passwd'
+            tf.addfile(info)
+
+        dest = tmp_path / 'extracted'
+        dest.mkdir()
+
+        with pytest.raises(ValueError, match='symlink'):
+            extract_tarball(tarball_path, dest)
+
+    def test_rejects_hardlink(self, tmp_path: Path):
+        """Test that hardlinks in tarball are rejected."""
+        tarball_path = tmp_path / 'hardlink.tar.gz'
+        with tarfile.open(tarball_path, 'w:gz') as tf:
+            info = tarfile.TarInfo('proj/link')
+            info.type = tarfile.LNKTYPE
+            info.linkname = '/etc/passwd'
+            tf.addfile(info)
+
+        dest = tmp_path / 'extracted'
+        dest.mkdir()
+
+        with pytest.raises(ValueError, match='symlink'):
+            extract_tarball(tarball_path, dest)
+
 
 class TestMoveTemplateToTarget:
     def test_creates_directory(self, tmp_path: Path):
