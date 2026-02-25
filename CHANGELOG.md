@@ -2,6 +2,31 @@
 
 <!-- version list -->
 
+## v1.10.3 (2026-02-25)
+
+### Bug Fixes
+
+- Harden supply chain, tarball extraction, and shell script inputs
+  ([#37](https://github.com/michaelellis003/uv-python-template/pull/37),
+  [`b894847`](https://github.com/michaelellis003/uv-python-template/commit/b894847f29740df6fbe1df484cbf2a6456168039))
+
+### Chores
+
+- **cli-release**: Pypkgkit v1.0.0
+  ([`238904e`](https://github.com/michaelellis003/uv-python-template/commit/238904e65f61faaf7346a8c4ec213b8f19a2a84a))
+
+### Continuous Integration
+
+- **cli**: Automate pypkgkit release with python-semantic-release
+  ([#36](https://github.com/michaelellis003/uv-python-template/pull/36),
+  [`fc1da15`](https://github.com/michaelellis003/uv-python-template/commit/fc1da1582693a476a00f33ad2f0e640c82f207e0))
+
+### Documentation
+
+- Add CI badge to README
+  ([`ab9c406`](https://github.com/michaelellis003/uv-python-template/commit/ab9c406fde8f79df098534214e6be867303b6d90))
+
+
 ## v1.10.2 (2026-02-19)
 
 ### Bug Fixes
