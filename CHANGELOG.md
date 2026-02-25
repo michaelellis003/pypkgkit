@@ -2,6 +2,15 @@
 
 <!-- version list -->
 
+## v1.10.6 (2026-02-25)
+
+### Bug Fixes
+
+- **cli**: Add build provenance attestation to CLI release workflow
+  ([#41](https://github.com/michaelellis003/uv-python-template/pull/41),
+  [`94c2980`](https://github.com/michaelellis003/uv-python-template/commit/94c29801155ab47004dc48f318aa3c8fee4685d6))
+
+
 ## v1.10.5 (2026-02-25)
 
 ### Bug Fixes
