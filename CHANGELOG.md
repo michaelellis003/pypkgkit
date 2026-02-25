@@ -2,6 +2,15 @@
 
 <!-- version list -->
 
+## v1.10.5 (2026-02-25)
+
+### Bug Fixes
+
+- **ci**: Re-comment template PyPI publish steps in release.yml
+  ([#40](https://github.com/michaelellis003/uv-python-template/pull/40),
+  [`8c6fec2`](https://github.com/michaelellis003/uv-python-template/commit/8c6fec23add73800729dbfd68e3406720ce988a8))
+
+
 ## v1.10.4 (2026-02-25)
 
 ### Bug Fixes
