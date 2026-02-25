@@ -54,7 +54,7 @@ jobs:
             echo "No previous CLI tag found — proceeding"
             echo "has_changes=true" >> "$GITHUB_OUTPUT"
           else
-            CHANGES=$(git diff --name-only "$LAST_TAG"..HEAD -- cli/)
+            CHANGES=$(git diff --name-only "$LAST_TAG"..HEAD -- cli/ .github/workflows/cli-release.yml)
             if [[ -z "$CHANGES" ]]; then
               echo "No CLI changes since $LAST_TAG — skipping"
               echo "has_changes=false" >> "$GITHUB_OUTPUT"
@@ -121,3 +121,9 @@ jobs:
         with:
           packages-dir: cli/dist/
           attestations: true
+
+      - name: Attest build provenance
+        if: steps.version.outputs.released == 'true'
+        uses: actions/attest-build-provenance@e8998f949152b193b063cb0ec769d69d929409be  # v2
+        with:
+          subject-path: cli/dist/*
