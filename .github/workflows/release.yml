@@ -86,6 +86,6 @@ jobs:
 
       - name: Attest build provenance
         if: steps.version.outputs.released == 'true'
-        uses: actions/attest-build-provenance@v2
+        uses: actions/attest-build-provenance@e8998f949152b193b063cb0ec769d69d929409be  # v2
         with:
           subject-path: dist/*
