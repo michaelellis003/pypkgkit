@@ -1,12 +1,12 @@
 # Python Package Template
 
-[![CI](https://github.com/michaelellis003/uv-python-template/actions/workflows/ci.yml/badge.svg)](https://github.com/michaelellis003/uv-python-template/actions/workflows/ci.yml)
+[![CI](https://github.com/michaelellis003/pypkgkit/actions/workflows/ci.yml/badge.svg)](https://github.com/michaelellis003/pypkgkit/actions/workflows/ci.yml)
 [![](https://img.shields.io/badge/Python-3.10|3.11|3.12|3.13-blue)](https://www.python.org)
 [![uv](https://img.shields.io/endpoint?url=https://raw.githubusercontent.com/astral-sh/uv/main/assets/badge/v0.json)](https://github.com/astral-sh/uv)
 [![Ruff](https://img.shields.io/endpoint?url=https://raw.githubusercontent.com/astral-sh/ruff/main/assets/badge/v2.json)](https://github.com/astral-sh/ruff)
 [![Pyright](https://img.shields.io/badge/Pyright-enabled-brightgreen)](https://github.com/microsoft/pyright)
-[![codecov](https://codecov.io/gh/michaelellis003/uv-python-template/graph/badge.svg?token=TUKP19SKJ3)](https://codecov.io/gh/michaelellis003/uv-python-template)
-[![License](https://img.shields.io/github/license/michaelellis003/uv-python-template)](https://github.com/michaelellis003/uv-python-template/blob/main/LICENSE)
+[![codecov](https://codecov.io/gh/michaelellis003/pypkgkit/graph/badge.svg?token=TUKP19SKJ3)](https://codecov.io/gh/michaelellis003/pypkgkit)
+[![License](https://img.shields.io/github/license/michaelellis003/pypkgkit)](https://github.com/michaelellis003/pypkgkit/blob/main/LICENSE)
 
 A production-ready template for starting new Python packages. Clone it, rename a few things, and start building — dependency management, linting, type checking, testing, and CI/CD are already wired up.
 
@@ -62,7 +62,7 @@ uvx pypkgkit new my-project \
 ### Option B: Clone and init
 
 ```bash
-git clone https://github.com/michaelellis003/uv-python-template.git my-project
+git clone https://github.com/michaelellis003/pypkgkit.git my-project
 cd my-project
 rm -rf .git && git init
 ```
@@ -143,7 +143,7 @@ uv run --group docs mkdocs serve              # Preview at http://127.0.0.1:8000
 uv run --group docs mkdocs build --strict     # Build static site
 ```
 
-Docs deploy to [GitHub Pages](https://michaelellis003.github.io/uv-python-template/) automatically on push to `main`. Enable it under **Settings > Pages > Source: GitHub Actions**.
+Docs deploy to [GitHub Pages](https://michaelellis003.github.io/pypkgkit/) automatically on push to `main`. Enable it under **Settings > Pages > Source: GitHub Actions**.
 
 ## Claude Code
 
@@ -204,7 +204,7 @@ To publish to PyPI automatically on each release:
 2. Add a [trusted publisher](https://docs.pypi.org/trusted-publishers/) on pypi.org for your repo (workflow: `release.yml`).
 3. Every merge to `main` with a `feat:` or `fix:` commit will auto-publish.
 
-A manual **test-publish.yml** workflow is included for validating your pipeline against [TestPyPI](https://test.pypi.org) first. A conda-forge recipe skeleton lives in `recipe/meta.yaml`, ready to submit to [staged-recipes](https://github.com/conda-forge/staged-recipes) once your package is on PyPI. See the full [Publishing Guide](https://michaelellis003.github.io/uv-python-template/publishing/) for details.
+A manual **test-publish.yml** workflow is included for validating your pipeline against [TestPyPI](https://test.pypi.org) first. A conda-forge recipe skeleton lives in `recipe/meta.yaml`, ready to submit to [staged-recipes](https://github.com/conda-forge/staged-recipes) once your package is on PyPI. See the full [Publishing Guide](https://michaelellis003.github.io/pypkgkit/publishing/) for details.
 
 ### RELEASE_TOKEN
 

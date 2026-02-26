@@ -21,7 +21,9 @@ def parse_args(argv: list[str] | None = None) -> argparse.Namespace:
     """
     parser = argparse.ArgumentParser(
         prog='pypkgkit',
-        description=('Scaffold new Python packages from uv-python-template.'),
+        description=(
+            'Scaffold new Python packages from the pypkgkit template.'
+        ),
     )
     parser.add_argument(
         '--version',

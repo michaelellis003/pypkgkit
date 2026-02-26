@@ -196,7 +196,7 @@ class TestUpdateProjectReferences:
     ):
         """Test that GitHub URLs are replaced."""
         f = tmp_path / 'README.md'
-        f.write_text('https://github.com/michaelellis003/uv-python-template')
+        f.write_text('https://github.com/michaelellis003/pypkgkit')
         config = init_mod.ProjectConfig(
             name='my-pkg',
             author='Jane Smith',
@@ -312,9 +312,7 @@ class TestUpdateProjectReferences:
     ):
         """Test that GitHub Pages URL is replaced."""
         f = tmp_path / 'mkdocs.yml'
-        f.write_text(
-            'site_url: https://michaelellis003.github.io/uv-python-template'
-        )
+        f.write_text('site_url: https://michaelellis003.github.io/pypkgkit')
         config = init_mod.ProjectConfig(
             name='my-pkg',
             author='Jane',
@@ -887,4 +885,23 @@ class TestValidateProject:
         """Test that clean project has no stale references."""
         (tmp_path / 'README.md').write_text('# My Pkg\nA great package')
         stale = init_mod.find_stale_references(tmp_path)
+        assert len(stale) == 0
+
+    def test_validate_project_suppresses_user_matching_patterns(
+        self, init_mod, tmp_path
+    ):
+        """Test that stale patterns matching user values are skipped."""
+        (tmp_path / 'README.md').write_text(
+            'Visit michaelellis003 for more info'
+        )
+        config = init_mod.ProjectConfig(
+            name='my-pkg',
+            author='Michael Ellis',
+            email='michaelellis003@gmail.com',
+            github_owner='michaelellis003',
+            description='A package',
+            license_key='mit',
+            enable_pypi=False,
+        )
+        stale = init_mod.find_stale_references(tmp_path, config)
         assert len(stale) == 0

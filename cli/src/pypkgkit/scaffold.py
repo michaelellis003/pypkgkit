@@ -38,7 +38,7 @@ from pypkgkit.prompt import (
 )
 
 REPO_OWNER = 'michaelellis003'
-REPO_NAME = 'uv-python-template'
+REPO_NAME = 'pypkgkit'
 _API_BASE = f'https://api.github.com/repos/{REPO_OWNER}/{REPO_NAME}'
 _ARCHIVE_BASE = f'https://github.com/{REPO_OWNER}/{REPO_NAME}'
 _TIMEOUT = 60

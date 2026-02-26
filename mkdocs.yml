@@ -1,7 +1,7 @@
 site_name: Python Package Template
-site_url: https://michaelellis003.github.io/uv-python-template/
-repo_url: https://github.com/michaelellis003/uv-python-template
-repo_name: michaelellis003/uv-python-template
+site_url: https://michaelellis003.github.io/pypkgkit/
+repo_url: https://github.com/michaelellis003/pypkgkit
+repo_name: michaelellis003/pypkgkit
 
 theme:
   name: material
