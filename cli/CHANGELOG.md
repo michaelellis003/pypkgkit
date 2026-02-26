@@ -2,6 +2,24 @@
 
 <!-- version list -->
 
+## v1.0.3 (2026-02-26)
+
+### Bug Fixes
+
+- **hooks**: Use python -m for all tool invocations in pre-push hook
+  ([#42](https://github.com/michaelellis003/pypkgkit/pull/42),
+  [`5db714f`](https://github.com/michaelellis003/pypkgkit/commit/5db714fd108f5817f11dc2e5db89d8786ce4c233))
+
+### Chores
+
+- Rename uv-python-template to pypkgkit ([#42](https://github.com/michaelellis003/pypkgkit/pull/42),
+  [`5db714f`](https://github.com/michaelellis003/pypkgkit/commit/5db714fd108f5817f11dc2e5db89d8786ce4c233))
+
+- Rename uv-python-template to pypkgkit across all references
+  ([#42](https://github.com/michaelellis003/pypkgkit/pull/42),
+  [`5db714f`](https://github.com/michaelellis003/pypkgkit/commit/5db714fd108f5817f11dc2e5db89d8786ce4c233))
+
+
 ## v1.0.2 (2026-02-25)
 
 ### Bug Fixes
