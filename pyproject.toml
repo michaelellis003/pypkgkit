@@ -29,11 +29,11 @@ dependencies = [
 # python-package-template = "python_package_template.__main__:main"
 
 [project.urls]
-Homepage = "https://github.com/michaelellis003/uv-python-template"
-Repository = "https://github.com/michaelellis003/uv-python-template"
-Issues = "https://github.com/michaelellis003/uv-python-template/issues"
-Documentation = "https://michaelellis003.github.io/uv-python-template/"
-Changelog = "https://github.com/michaelellis003/uv-python-template/blob/main/CHANGELOG.md"
+Homepage = "https://github.com/michaelellis003/pypkgkit"
+Repository = "https://github.com/michaelellis003/pypkgkit"
+Issues = "https://github.com/michaelellis003/pypkgkit/issues"
+Documentation = "https://michaelellis003.github.io/pypkgkit/"
+Changelog = "https://github.com/michaelellis003/pypkgkit/blob/main/CHANGELOG.md"
 
 [dependency-groups]
 dev = [

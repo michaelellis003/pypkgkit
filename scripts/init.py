@@ -556,7 +556,7 @@ def update_project_references(
     )
     replace_in_files(
         files,
-        'michaelellis003/uv-python-template',
+        'michaelellis003/pypkgkit',
         config.github_repo,
     )
 
@@ -586,7 +586,7 @@ def update_project_references(
     # GitHub Pages URL
     replace_in_files(
         files,
-        'michaelellis003.github.io/uv-python-template',
+        'michaelellis003.github.io/pypkgkit',
         f'{config.github_owner}.github.io/{config.kebab_name}',
     )
 
@@ -1006,11 +1006,20 @@ def remove_todo_comments(root: Path) -> None:
         pyproject.write_text('\n'.join(lines))
 
 
-def find_stale_references(root: Path) -> list[Path]:
+def find_stale_references(
+    root: Path,
+    config: ProjectConfig | None = None,
+) -> list[Path]:
     """Find files containing stale template references.
+
+    When *config* is provided, patterns that match the user-supplied
+    values are excluded so that the template author scaffolding their
+    own project does not trigger false positives.
 
     Args:
         root: Project root directory.
+        config: Optional project configuration used to suppress
+            patterns that match the user's own identity.
 
     Returns:
         List of files with stale references.
@@ -1018,10 +1027,18 @@ def find_stale_references(root: Path) -> list[Path]:
     stale_patterns = [
         'python_package_template',
         'python-package-template',
-        'uv-python-template',
         'michaelellis003',
         'Michael Ellis',
     ]
+
+    # Suppress patterns that match user-supplied values so the
+    # template author doesn't get false positives.
+    if config is not None:
+        user_values = {
+            config.github_owner,
+            config.author,
+        }
+        stale_patterns = [p for p in stale_patterns if p not in user_values]
 
     text_exts = {
         '.py',
@@ -1815,7 +1832,7 @@ def _validate_project(root: Path, config: ProjectConfig) -> bool:
         ok = False
 
     # Check for stale references
-    stale = find_stale_references(root)
+    stale = find_stale_references(root, config)
     if stale:
         print('warning: Stale template references found in:')
         for f in stale:

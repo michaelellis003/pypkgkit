@@ -27,7 +27,7 @@ test:
     - python_package_template
 
 about:
-  home: https://github.com/michaelellis003/uv-python-template
+  home: https://github.com/michaelellis003/pypkgkit
   summary: A production-ready template for starting new Python packages.
   license: Apache-2.0
   license_file: LICENSE

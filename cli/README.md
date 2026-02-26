@@ -1,7 +1,7 @@
 # pypkgkit
 
 Scaffold new Python packages from the
-[uv-python-template](https://github.com/michaelellis003/uv-python-template).
+[pypkgkit template](https://github.com/michaelellis003/pypkgkit).
 
 ## Installation
 
