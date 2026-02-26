@@ -16,7 +16,7 @@ type checking, testing, and CI/CD are already wired up.
 ## Quick Start
 
 ```bash
-git clone https://github.com/michaelellis003/uv-python-template.git my-project
+git clone https://github.com/michaelellis003/pypkgkit.git my-project
 cd my-project
 uv run --script ./scripts/init.py
 uv sync

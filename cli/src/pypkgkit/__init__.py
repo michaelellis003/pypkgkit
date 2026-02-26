@@ -1,4 +1,4 @@
-"""pypkgkit — scaffold Python packages from uv-python-template."""
+"""pypkgkit — scaffold Python packages from the pypkgkit template."""
 
 from importlib.metadata import PackageNotFoundError, version
 

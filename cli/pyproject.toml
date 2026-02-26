@@ -1,7 +1,7 @@
 [project]
 name = "pypkgkit"
 version = "1.0.2"
-description = "Scaffold new Python packages from the uv-python-template."
+description = "Scaffold new Python packages from the pypkgkit template."
 authors = [
     {name = "Michael Ellis", email = "michaelellis003@gmail.com"}
 ]
@@ -27,9 +27,9 @@ dependencies = []
 pypkgkit = "pypkgkit.cli:main"
 
 [project.urls]
-Homepage = "https://github.com/michaelellis003/uv-python-template"
-Repository = "https://github.com/michaelellis003/uv-python-template"
-Issues = "https://github.com/michaelellis003/uv-python-template/issues"
+Homepage = "https://github.com/michaelellis003/pypkgkit"
+Repository = "https://github.com/michaelellis003/pypkgkit"
+Issues = "https://github.com/michaelellis003/pypkgkit/issues"
 
 [dependency-groups]
 dev = [
