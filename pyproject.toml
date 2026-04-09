@@ -64,13 +64,12 @@ ignore = []
 convention = "google"
 
 [tool.semantic_release]
+allow_zero_version = true
 version_toml = ["pyproject.toml:project.version"]
 version_variables = ["src/pypkgkit/__init__.py:__version__"]
-branch = "main"
 commit_message = "chore(release): {version}"
-build_command = "uv build"
 
-[tool.semantic_release.changelog]
+[tool.semantic_release.changelog.default_templates]
 changelog_file = "CHANGELOG.md"
 
 [tool.semantic_release.remote]
