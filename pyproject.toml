@@ -1,19 +1,17 @@
 [project]
-name = "python-package-template"
-version = "1.10.7"
-description = "A production-ready template for starting new Python packages."
-authors = [
-    {name = "Michael Ellis", email = "michaelellis003@gmail.com"}
-]
-license = {text = "Apache-2.0"}
+name = "pypkgkit"
+version = "0.1.0"
+description = "A template for python packages"
 readme = "README.md"
+authors = [
+    { name = "Michael Ellis", email = "michaelellis003@gmail.com" }
+]
+license = "Apache-2.0"
 requires-python = ">=3.10"
-keywords = ["template", "python", "uv", "ruff", "pyright"]
 classifiers = [
-    "Development Status :: 4 - Beta",
+    "Development Status :: 3 - Alpha",
     "Intended Audience :: Developers",
     "License :: OSI Approved :: Apache Software License",
-    "Operating System :: OS Independent",
     "Programming Language :: Python :: 3",
     "Programming Language :: Python :: 3.10",
     "Programming Language :: Python :: 3.11",
@@ -21,166 +19,69 @@ classifiers = [
     "Programming Language :: Python :: 3.13",
     "Typing :: Typed",
 ]
-dependencies = [
-]
+dependencies = []
 
-# Uncomment to add a CLI entry point:
-# [project.scripts]
-# python-package-template = "python_package_template.__main__:main"
+[project.scripts]
+pypkgkit = "pypkgkit:main"
 
-[project.urls]
-Homepage = "https://github.com/michaelellis003/pypkgkit"
-Repository = "https://github.com/michaelellis003/pypkgkit"
-Issues = "https://github.com/michaelellis003/pypkgkit/issues"
-Documentation = "https://michaelellis003.github.io/pypkgkit/"
-Changelog = "https://github.com/michaelellis003/pypkgkit/blob/main/CHANGELOG.md"
+[build-system]
+requires = ["uv_build>=0.9.5,<0.10.0"]
+build-backend = "uv_build"
 
 [dependency-groups]
 dev = [
-    "pytest>=8.3.4",
-    "pyright>=1.1.408",
-    "pytest-cov>=6.0.0",
-    "pre-commit>=4.1.0",
-    "python-semantic-release>=10.2.0",
-    "ruff>=0.15.1",
+    "mkdocs-gen-files>=0.6.1",
+    "mkdocs-literate-nav>=0.6.3",
+    "mkdocs-material>=9.7.6",
+    "mkdocstrings[python]>=1.0.3",
+    "pre-commit>=4.5.1",
+    "properdocs>=1.6.7",
+    "pytest>=9.0.3",
+    "pytest-cov>=7.1.0",
+    "ruff>=0.15.9",
+    "ty>=0.0.29",
 ]
-docs = [
-    "mkdocs-material>=9.6",
-    "mkdocstrings[python]>=0.29",
-]
-
-[build-system]
-requires = ["hatchling"]
-build-backend = "hatchling.build"
-
-[tool.hatch.build.targets.wheel]
-packages = ["python_package_template"]
 
 [tool.ruff]
+# Target version enables modern syntax upgrades where possible
 target-version = "py310"
-line-length = 79
+preview = true
+line-length = 80
 indent-width = 4
 
 [tool.ruff.lint]
 select = [
-    # pyflakes
-    "F",
-    # pycodestyle
-    "E", "W",
-    # pep8-naming
-    "N",
-    # pydocstyle
-    "D",
-    # pyupgrade
-    "UP",
-    # flake8-bugbear
-    "B",
-    # flake8-simplify
-    "SIM",
-    # isort
-    "I",
-    # flake8-comprehensions
-    "C4",
-    # mccabe complexity
-    "C90",
-    # flake8-print
-    "T20",
-    # flake8-bandit (security)
-    "S",
-    # flake8-pytest-style
-    "PT",
-    # Pylint refactoring rules
-    "PLR",
-    # Ruff-specific rules
-    "RUF",
-    # flake8-unused-arguments
-    "ARG",
+    "E", "W", "F", "I", "D", # Core errors, warnings, isort, and docstrings
+    "UP",  # pyupgrade (modernizes syntax)
+    "B",   # flake8-bugbear (catches design flaws/bugs)
+    "SIM", # flake8-simplify (cleans up messy logic)
+    "RUF", # Ruff's custom advanced rules
 ]
-
-ignore = [
-    # docstring-tab-indentation (formatter handles this)
-    "D206",
-    # triple-single-quotes (formatter handles this)
-    "D300",
-]
-
-# Allow fix for all enabled rules (when `--fix`) is provided.
-fixable = ["ALL"]
-unfixable = []
-
-# Allow unused variables when underscore-prefixed.
-dummy-variable-rgx = "^(_+|(_+[a-zA-Z0-9_]*[a-zA-Z0-9]+?))$"
-
-[tool.ruff.lint.mccabe]
-max-complexity = 10
+ignore = []
 
 [tool.ruff.lint.pydocstyle]
-convention = "google" # Accepts: "google", "numpy", or "pep257".
-
-[tool.ruff.lint.isort]
-force-single-line = false
-force-wrap-aliases = false
-lines-after-imports = -1
-lines-between-types = 0
-
-[tool.ruff.lint.per-file-ignores]
-"tests/*" = ["D", "S101", "S603", "PLR2004", "ARG"]
-"scripts/*" = ["T20", "S310", "S603", "S607", "BLE001"]
-"__init__.py" = ["F401"]
-"__main__.py" = ["T20"]
-
-[tool.ruff.format]
-quote-style = "single"
-indent-style = "space"
-skip-magic-trailing-comma = false
-line-ending = "auto"
-
-# Enable auto-formatting of code examples in docstrings. Markdown,
-# reStructuredText code/literal blocks and doctests are all supported.
-docstring-code-format = true
-
-# Set the line length limit used when formatting code snippets in
-# docstrings.
-docstring-code-line-length = "dynamic"
-
-[tool.pyright]
-venvPath = "."
-venv = ".venv"
-typeCheckingMode = "standard"
-exclude = [".venv", "cli"]
-
-[tool.pytest.ini_options]
-addopts = ["-ra", "--strict-markers", "--strict-config"]
-xfail_strict = true
-testpaths = ["tests"]
-markers = [
-    "unit: fast, isolated unit tests",
-    "integration: tests that touch external systems",
-    "slow: long-running tests",
-]
-
-[tool.coverage.run]
-source = ["python_package_template"]
-branch = true
-
-[tool.coverage.report]
-# Minimum coverage required to pass. Enforced by the "coverage" CI job.
-fail_under = 80
-show_missing = true
-exclude_lines = [
-    "pragma: no cover",
-    "if __name__ == .__main__.",
-    "if TYPE_CHECKING:",
-    "@overload",
-]
+# Enforce Google-style docstrings
+convention = "google"
 
 [tool.semantic_release]
 version_toml = ["pyproject.toml:project.version"]
+version_variables = ["src/pypkgkit/__init__.py:__version__"]
 branch = "main"
-commit_message = "chore(release): v{version}"
-# TODO: Update the --upgrade-package name to match your project name.
-build_command = """
-    uv lock --upgrade-package python-package-template
-    git add uv.lock
-    uv build
-"""
+commit_message = "chore(release): {version}"
+build_command = "uv build"
+
+[tool.semantic_release.changelog]
+changelog_file = "CHANGELOG.md"
+
+[tool.semantic_release.remote]
+type = "github"
+
+[tool.semantic_release.publish]
+upload_to_vcs_release = true
+
+[tool.pytest.ini_options]
+minversion = "7.0"
+addopts = "-ra -q"
+testpaths = [
+    "tests",
+]

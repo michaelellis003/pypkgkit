@@ -1,10 +1,11 @@
 name: 'Setup uv'
 description: 'Install uv and sync project dependencies'
+
 inputs:
   python-version:
-    description: 'Python version'
+    description: 'Python version to install. If omitted, uv reads pyproject.toml or .python-version'
     required: false
-    default: '3.13'
+
 runs:
   using: 'composite'
   steps:
@@ -13,6 +14,7 @@ runs:
       with:
         python-version: ${{ inputs.python-version }}
         enable-cache: true
+
     - name: Install dependencies
       shell: bash
-      run: uv sync --locked
+      run: uv sync --locked --all-extras
