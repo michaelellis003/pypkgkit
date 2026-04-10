@@ -68,6 +68,10 @@ convention = "google"
 version_toml = ["pyproject.toml:project.version"]
 version_variables = ["src/pypkgkit/__init__.py:__version__"]
 commit_message = "chore(release): {version}"
+build_command = """
+    uv lock --upgrade-package "$PACKAGE_NAME"
+    git add uv.lock
+"""
 
 [tool.semantic_release.changelog.default_templates]
 changelog_file = "CHANGELOG.md"

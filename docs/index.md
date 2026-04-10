@@ -7,25 +7,16 @@ releases — all wired together and ready to go.
 
 ## Quick start
 
-### From GitHub (latest)
-
-Use this to always get the latest version of the template directly
-from the repository:
-
 ```bash
 uv tool install cookiecutter
 cookiecutter gh:michaelellis003/pypkgkit
 ```
 
-### From PyPI (pinned version)
-
-Install pypkgkit as a package to pin to a specific template version.
-This is useful for teams that want reproducible project generation
-across members:
+To pin a specific template version, pass the `--checkout` flag with a
+release tag:
 
 ```bash
-uv tool install pypkgkit
-uvx cookiecutter pypkgkit
+cookiecutter gh:michaelellis003/pypkgkit --checkout v2.1.2
 ```
 
 After answering a few prompts, the template generates a project with
