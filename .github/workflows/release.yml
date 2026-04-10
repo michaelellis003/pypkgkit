@@ -48,7 +48,7 @@ jobs:
           git tag -d "v${VERSION}"
           git commit --amend --no-edit
           git tag "v${VERSION}"
-          git push origin main --follow-tags
+          git push origin main "v${VERSION}"
 
       - name: Build package
         if: steps.semver.outputs.released == 'true'
