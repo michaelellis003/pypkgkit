@@ -1,7 +1,7 @@
 # Copyright Contributors to the pypkgkit project.
 # SPDX-License-Identifier: Apache-2.0
 
-"""main module for pypkgkit."""
+"""Main module for pypkgkit."""
 
 
 def main() -> None:
