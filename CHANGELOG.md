@@ -2,6 +2,15 @@
 
 <!-- version list -->
 
+## v2.1.5 (2026-04-10)
+
+### Bug Fixes
+
+- Configure git identity for lockfile update commit
+  ([#67](https://github.com/michaelellis003/pypkgkit/pull/67),
+  [`6c33961`](https://github.com/michaelellis003/pypkgkit/commit/6c3396195049e8865c19ed3e2c89770ba8a3e99f))
+
+
 ## v2.1.4 (2026-04-10)
 
 ### Bug Fixes
