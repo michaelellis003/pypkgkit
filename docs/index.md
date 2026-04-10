@@ -1,19 +1,20 @@
 # pypkgkit
 
-A minimal, opinionated template for Python packages.
+A [Cookiecutter](https://cookiecutter.readthedocs.io/) template for
+Python packages. One command gives you a fully configured project with
+linting, type checking, testing, CI/CD, documentation, and automated
+releases — all wired together and ready to go.
 
-## Motivation
+## Quick start
 
-Starting a new Python project involves a surprisingly large number of
-decisions that have nothing to do with the project itself: which
-linter, which formatter, how to structure CI, how to automate releases,
-how to generate documentation. These choices are largely orthogonal to
-the actual work, yet getting them wrong — or deferring them — tends to
-create friction later.
+```bash
+uv tool install cookiecutter
+cookiecutter gh:michaelellis003/pypkgkit
+```
 
-pypkgkit assembles a reasonable set of modern tools into a single
-template so that new projects inherit a working development
-environment from the outset.
+After answering a few prompts, the template generates a project with
+dependencies installed, pre-commit hooks configured, and an initial
+commit ready to push.
 
 ## Tooling overview
 
@@ -50,28 +51,62 @@ configured to open PRs weekly for both GitHub Actions and pip
 dependencies.
 
 **Typing** follows [PEP 561](https://peps.python.org/pep-0561/). The
-package ships a `py.typed` marker, so downstream consumers get full
-type information when importing from pypkgkit.
+generated package ships a `py.typed` marker, so downstream consumers
+get full type information.
 
-## Quick start
+## Template variables
 
-```bash
-git clone https://github.com/michaelellis003/pypkgkit.git
-cd pypkgkit
-uv sync
+| Variable | Default | Description |
+|---|---|---|
+| `project_name` | `my-python-package` | Name of the project |
+| `project_slug` | *auto* | Python-importable name |
+| `project_description` | `A Python package` | One-line description |
+| `author_name` | `Your Name` | Author name |
+| `author_email` | `you@example.com` | Author email |
+| `github_username` | `your-github-username` | GitHub username |
+| `python_version` | `3.12` | Minimum Python version |
+| `initial_version` | `0.1.0` | Starting version |
+
+## Generated project structure
+
 ```
-
-Install the pre-commit hooks (this only needs to be done once):
-
-```bash
-uv run pre-commit install
-uv run pre-commit install --hook-type commit-msg
-uv run pre-commit install --hook-type pre-push
+my_python_package/
+├── .github/
+│   ├── CODEOWNERS
+│   ├── dependabot.yml
+│   ├── actions/setup-uv/action.yml
+│   └── workflows/
+│       ├── ci.yml
+│       ├── dependabot-automerge.yml
+│       ├── docs.yml
+│       └── release.yml
+├── docs/
+│   ├── api.md
+│   ├── gen_ref_pages.py
+│   └── index.md
+├── scripts/
+│   └── update_headers.py
+├── src/my_python_package/
+│   ├── __init__.py
+│   ├── main.py
+│   └── py.typed
+├── tests/
+│   ├── __init__.py
+│   └── test_version.py
+├── .gitignore
+├── .pre-commit-config.yaml
+├── CHANGELOG.md
+├── LICENSE
+├── Makefile
+├── README.md
+├── mkdocs.yml
+├── pyproject.toml
+└── uv.lock
 ```
 
 ## Makefile
 
-A `Makefile` collects the common development commands:
+Each generated project includes a `Makefile` with common tasks:
 
 | Target | What it does |
 |---|---|
@@ -102,24 +137,20 @@ on the success of the previous one:
 3. **Docs** — triggered after Release succeeds. Deploys the
    documentation to GitHub Pages.
 
-## Conventional Commits
+## After generating your project
 
-All commit messages must follow the
-[Conventional Commits](https://www.conventionalcommits.org/) spec. A
-pre-commit hook enforces this at commit time. The format is:
+1. Create a GitHub repo and push:
 
-```
-<type>: <description>
+   ```bash
+   git remote add origin https://github.com/<username>/<project-name>.git
+   git push -u origin main
+   ```
 
-[optional body]
-
-[optional footer(s)]
-```
-
-Common types: `feat`, `fix`, `docs`, `chore`, `refactor`, `test`,
-`ci`. Only `feat` and `fix` (and breaking changes) trigger version
-bumps; the others are recorded in the history but do not produce a
-release.
+2. Configure GitHub settings:
+   - **GitHub Pages**: Settings > Pages > Source: `gh-pages`
+   - **RELEASE_TOKEN**: Settings > Secrets — a PAT with `contents: write`
+   - **PyPI trusted publishing**: add the repo on pypi.org
+   - **CODECOV_TOKEN**: Settings > Secrets (optional)
 
 ## License
 

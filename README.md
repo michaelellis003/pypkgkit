@@ -2,19 +2,47 @@
 
 [![CI](https://github.com/michaelellis003/pypkgkit/actions/workflows/ci.yml/badge.svg)](https://github.com/michaelellis003/pypkgkit/actions/workflows/ci.yml)
 [![PyPI](https://img.shields.io/pypi/v/pypkgkit)](https://pypi.org/project/pypkgkit/)
-[![Python](https://img.shields.io/pypi/pyversions/pypkgkit)](https://pypi.org/project/pypkgkit/)
-[![codecov](https://codecov.io/github/michaelellis003/pypkgkit/graph/badge.svg?token=8GCPQ1QHMF)](https://codecov.io/github/michaelellis003/pypkgkit)
 [![License](https://img.shields.io/github/license/michaelellis003/pypkgkit)](LICENSE)
 [![Docs](https://img.shields.io/badge/docs-GitHub%20Pages-blue)](https://michaelellis003.github.io/pypkgkit/)
 
-A minimal, opinionated template for Python packages.
+A [Cookiecutter](https://cookiecutter.readthedocs.io/) template for
+Python packages. One command gives you a fully configured project with
+linting, type checking, testing, CI/CD, documentation, and automated
+releases — all wired together and ready to go.
 
-The goal is straightforward: provide a single starting point that
-assembles modern Python tooling into a coherent whole, so that new
-projects begin with CI, documentation, and release automation already
-in place — rather than reinventing this infrastructure each time.
+## Quick start
+
+```bash
+# Install cookiecutter if you haven't already
+uv tool install cookiecutter
+
+# Generate a new project
+cookiecutter gh:michaelellis003/pypkgkit
+```
+
+You will be prompted for a few values:
+
+| Variable | Default | Description |
+|---|---|---|
+| `project_name` | `my-python-package` | Name of the project (used in PyPI, GitHub, etc.) |
+| `project_slug` | *auto* | Python-importable name (derived from project name) |
+| `project_description` | `A Python package` | One-line description |
+| `author_name` | `Your Name` | Author name for pyproject.toml and LICENSE |
+| `author_email` | `you@example.com` | Author email |
+| `github_username` | `your-github-username` | GitHub username (used in URLs, badges, CODEOWNERS) |
+| `python_version` | `3.12` | Minimum Python version |
+| `initial_version` | `0.1.0` | Starting version |
+
+After generation, the template automatically:
+
+1. Initializes a git repository
+2. Installs dependencies with `uv sync`
+3. Installs pre-commit hooks
+4. Creates an initial commit
 
 ## What is included
+
+Every generated project comes with:
 
 | Concern | Tool |
 |---|---|
@@ -28,74 +56,44 @@ in place — rather than reinventing this infrastructure each time.
 | Dependency updates | [Dependabot](https://docs.github.com/en/code-security/dependabot) (weekly, for both Actions and pip) |
 | Pre-commit hooks | Ruff, ty, license headers, conventional commit validation |
 
+## After generating your project
+
+1. Create a GitHub repo and push:
+
+   ```bash
+   git remote add origin https://github.com/<username>/<project-name>.git
+   git push -u origin main
+   ```
+
+2. Configure GitHub settings:
+   - **GitHub Pages**: Settings > Pages > Source: `gh-pages`
+   - **RELEASE_TOKEN**: Settings > Secrets — a PAT with `contents: write`
+   - **PyPI trusted publishing**: add the repo on pypi.org
+   - **CODECOV_TOKEN**: Settings > Secrets (optional)
+
 ## Requirements
 
-- Python 3.10 or later
 - [uv](https://docs.astral.sh/uv/) installed
+- [cookiecutter](https://cookiecutter.readthedocs.io/) (`uv tool install cookiecutter`)
 
-## Getting started
+## Contributing
 
-Clone the repository and install dependencies:
+To work on the template itself:
 
 ```bash
 git clone https://github.com/michaelellis003/pypkgkit.git
 cd pypkgkit
 uv sync
-```
-
-Install the pre-commit hooks:
-
-```bash
 uv run pre-commit install
 uv run pre-commit install --hook-type commit-msg
 uv run pre-commit install --hook-type pre-push
 ```
 
-## Development
-
-A `Makefile` is provided for common tasks:
+Test the template locally:
 
 ```bash
-make test        # lint + pytest
-make lint        # ruff check, format check, license headers, ty
-make format      # add license headers, ruff format, ruff fix
-make license     # add missing license headers
-make docs        # build documentation
-make serve-docs  # serve documentation locally
-make install     # uv sync
-make clean       # git clean (preserves .venv)
+cookiecutter . --no-input
 ```
-
-Or invoke tools directly:
-
-```bash
-uv run pytest -v
-uv run ruff check .
-uv run ruff format .
-uv run ty check
-uv run properdocs serve
-```
-
-## How releases work
-
-Releases are fully automated. When a commit lands on `main` and CI
-passes, `python-semantic-release` inspects the commit history to
-determine whether a version bump is warranted:
-
-- `fix: ...` produces a patch release (0.1.0 &rarr; 0.1.1)
-- `feat: ...` produces a minor release (0.1.0 &rarr; 0.2.0)
-- A `BREAKING CHANGE` footer or `!` suffix produces a major release (0.1.0 &rarr; 1.0.0)
-
-If a bump is triggered, the pipeline updates the version in
-`pyproject.toml` and `src/pypkgkit/__init__.py`, creates a Git tag and
-GitHub release, generates the changelog, builds the package, and
-publishes it to PyPI via trusted publishing. Documentation is deployed
-to GitHub Pages immediately after.
-
-Commit messages that do not follow the
-[Conventional Commits](https://www.conventionalcommits.org/) spec are
-rejected by a pre-commit hook, so the release process stays
-well-defined.
 
 ## License
 

@@ -20,6 +20,8 @@ jobs:
 
       - name: Setup uv
         uses: ./.github/actions/setup-uv
+        with:
+          locked: 'false'
 
       - name: Deploy to GitHub Pages
         run: uv run properdocs gh-deploy --force

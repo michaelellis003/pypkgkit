@@ -5,6 +5,10 @@ inputs:
   python-version:
     description: 'Python version to install. If omitted, uv reads pyproject.toml or .python-version'
     required: false
+  locked:
+    description: 'Use --locked flag for uv sync. Set to false after version bumps that invalidate the lockfile.'
+    required: false
+    default: 'true'
 
 runs:
   using: 'composite'
@@ -17,4 +21,4 @@ runs:
 
     - name: Install dependencies
       shell: bash
-      run: uv sync --locked --all-extras
+      run: uv sync ${{ inputs.locked == 'true' && '--locked' || '' }} --all-extras
