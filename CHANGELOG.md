@@ -2,6 +2,21 @@
 
 <!-- version list -->
 
+## v2.1.3 (2026-04-10)
+
+### Bug Fixes
+
+- Update lockfile during semantic-release version bump
+  ([#65](https://github.com/michaelellis003/pypkgkit/pull/65),
+  [`16e3674`](https://github.com/michaelellis003/pypkgkit/commit/16e3674543fef6d17af59848814fe6431464bc9b))
+
+### Documentation
+
+- Remove incorrect PyPI installation instructions
+  ([#65](https://github.com/michaelellis003/pypkgkit/pull/65),
+  [`16e3674`](https://github.com/michaelellis003/pypkgkit/commit/16e3674543fef6d17af59848814fe6431464bc9b))
+
+
 ## v2.1.2 (2026-04-10)
 
 ### Bug Fixes
