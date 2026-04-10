@@ -1,0 +1,203 @@
+{% raw -%}
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.head_ref || github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  ruff-lint:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Checkout
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd  # v6
+
+      - name: Setup uv
+        uses: ./.github/actions/setup-uv
+
+      - name: Ruff lint
+        run: uv run ruff check .
+
+  ruff-format:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Checkout
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd  # v6
+
+      - name: Setup uv
+        uses: ./.github/actions/setup-uv
+
+      - name: Ruff format check
+        run: uv run ruff format --check .
+
+  ty-check:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Checkout
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd  # v6
+
+      - name: Setup uv
+        uses: ./.github/actions/setup-uv
+
+      - name: Ty type check
+        run: uv run ty check
+
+  license-headers:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Checkout
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd  # v6
+
+      - name: Setup uv
+        uses: ./.github/actions/setup-uv
+
+      - name: Check license headers
+        run: uv run python scripts/update_headers.py --check
+
+  pytest:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    strategy:
+      fail-fast: false
+      matrix:
+        python-version: ["3.10", "3.11", "3.12", "3.13"]
+    steps:
+      - name: Checkout
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd  # v6
+
+      - name: Setup uv
+        uses: ./.github/actions/setup-uv
+        with:
+          # This is the ONLY place we pass a version, so it iterates through the matrix
+          python-version: ${{ matrix.python-version }}
+
+      - name: Run tests
+        run: uv run pytest -v --durations=0
+
+  coverage:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - name: Checkout
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd  # v6
+
+      - name: Setup uv
+        uses: ./.github/actions/setup-uv
+
+      - name: Run tests with coverage
+        run: uv run pytest --cov --cov-report=term-missing --cov-report=xml
+
+      - name: Upload Coverage to Codecov
+        uses: codecov/codecov-action@671740ac38dd9b0130fbe1cec585b89eea48d3de  # v5
+        continue-on-error: true
+        with:
+          token: ${{ secrets.CODECOV_TOKEN }}
+
+  lock-check:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Checkout
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd  # v6
+
+      - name: Setup uv
+        uses: ./.github/actions/setup-uv
+
+      - name: Check lockfile is up to date
+        run: uv lock --check
+
+  pytest-macos:
+    runs-on: macos-latest
+    timeout-minutes: 15
+    steps:
+      - name: Checkout
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd  # v6
+
+      - name: Setup uv
+        uses: ./.github/actions/setup-uv
+
+      - name: Run tests
+        run: uv run pytest -v --durations=0 -m 'not integration'
+
+  pytest-windows:
+    runs-on: windows-latest
+    timeout-minutes: 15
+    steps:
+      - name: Checkout
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd  # v6
+
+      - name: Setup uv
+        uses: ./.github/actions/setup-uv
+
+      - name: Run tests
+        run: uv run pytest -v --durations=0 -m 'not integration'
+
+  build:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Checkout
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd  # v6
+
+      - name: Setup uv
+        uses: ./.github/actions/setup-uv
+
+      - name: Build sdist and wheel
+        run: uv build
+
+      - name: Validate package metadata
+        run: uvx twine check dist/*
+
+      - name: Verify wheel installs and imports
+        run: |
+          PACKAGE_NAME=$(uv run python -c "
+          import tomllib
+          with open('pyproject.toml', 'rb') as f:
+              name = tomllib.load(f)['project']['name']
+          print(name.replace('-', '_'))
+          ")
+          if [[ -z "$PACKAGE_NAME" ]]; then
+            echo "::error::Failed to extract package name from pyproject.toml"
+            exit 1
+          fi
+          uv venv /tmp/test-install
+          VIRTUAL_ENV=/tmp/test-install uv pip install dist/*.whl
+          /tmp/test-install/bin/python -c "import ${PACKAGE_NAME}; print(${PACKAGE_NAME}.__version__)"
+
+  ci-pass:
+    if: always()
+    needs:
+      - ruff-lint
+      - ruff-format
+      - ty-check
+      - license-headers
+      - pytest
+      - coverage
+      - lock-check
+      - pytest-macos
+      - pytest-windows
+      - build
+    runs-on: ubuntu-latest
+    timeout-minutes: 1
+    steps:
+      - name: Verify all checks passed
+        run: |
+          if [[ "${{ contains(needs.*.result, 'failure') || contains(needs.*.result, 'cancelled') }}" == "true" ]]; then
+            echo "One or more CI jobs failed or were cancelled."
+            exit 1
+          fi
+{%- endraw %}

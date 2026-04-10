@@ -1,4 +1,4 @@
-# Copyright Contributors to the pypkgkit project.
+# Copyright Contributors to the {{ cookiecutter.project_name }} project.
 # SPDX-License-Identifier: Apache-2.0
 
 """Ensure all Python source files carry SPDX license headers."""
@@ -9,14 +9,7 @@ import os
 import sys
 
 root = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-blacklist = [
-    "/build/",
-    "/dist/",
-    "/pypkgkit.egg",
-    "/venv/",
-    "/.venv/",
-    "/{{cookiecutter",
-]
+blacklist = ["/build/", "/dist/", "/{{ cookiecutter.project_slug }}.egg", "/venv/", "/.venv/"]
 file_types = [("*.py", "# {}")]
 
 parser = argparse.ArgumentParser()
@@ -26,7 +19,7 @@ dirty = []
 
 for basename, comment in file_types:
     copyright_line = comment.format(
-        "Copyright Contributors to the pypkgkit project.\n"
+        "Copyright Contributors to the {{ cookiecutter.project_name }} project.\n"
     )
     # See https://spdx.org/ids-how
     spdx_line = comment.format("SPDX-License-Identifier: Apache-2.0\n")

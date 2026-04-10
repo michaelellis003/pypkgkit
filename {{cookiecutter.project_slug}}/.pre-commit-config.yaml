@@ -6,11 +6,8 @@ repos:
     rev: v6.0.0
     hooks:
       - id: trailing-whitespace
-        exclude: '\{\{cookiecutter'
       - id: end-of-file-fixer
-        exclude: '\{\{cookiecutter'
       - id: check-yaml
-        exclude: '\{\{cookiecutter'
 
   # 2. Conventional Commits
   - repo: https://github.com/compilerla/conventional-pre-commit
@@ -29,7 +26,6 @@ repos:
         language: system
         types: [python]
         pass_filenames: false
-        exclude: '\{\{cookiecutter'
 
   # 4. Ruff (Linting & Formatting on Commit)
   - repo: https://github.com/astral-sh/ruff-pre-commit
@@ -37,9 +33,7 @@ repos:
     hooks:
       - id: ruff-check
         args: [ --fix ]
-        exclude: '\{\{cookiecutter'
       - id: ruff-format
-        exclude: '\{\{cookiecutter'
 
   # 5. Ty (Type Checking on Push)
   - repo: local
@@ -51,4 +45,3 @@ repos:
         types: [python]
         pass_filenames: false
         stages: [pre-push]
-        exclude: '\{\{cookiecutter'
