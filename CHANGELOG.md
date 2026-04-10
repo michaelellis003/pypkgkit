@@ -2,6 +2,15 @@
 
 <!-- version list -->
 
+## v2.1.4 (2026-04-10)
+
+### Bug Fixes
+
+- Update lockfile after release via workflow step
+  ([#66](https://github.com/michaelellis003/pypkgkit/pull/66),
+  [`4b7ba7c`](https://github.com/michaelellis003/pypkgkit/commit/4b7ba7cb50aa3f88a95dc24fd47292522f8d799d))
+
+
 ## v2.1.3 (2026-04-10)
 
 ### Bug Fixes
