@@ -2,6 +2,17 @@
 
 <!-- version list -->
 
+## v2.1.6 (2026-04-10)
+
+### Bug Fixes
+
+- Explicitly push release tag to remote ([#68](https://github.com/michaelellis003/pypkgkit/pull/68),
+  [`5c6122a`](https://github.com/michaelellis003/pypkgkit/commit/5c6122abfeaccdbd553433ad322762577c4a01b6))
+
+- Improve CLI entrypoint docstring ([#69](https://github.com/michaelellis003/pypkgkit/pull/69),
+  [`61b47e6`](https://github.com/michaelellis003/pypkgkit/commit/61b47e63da86a25f2713e15780ea911985e86888))
+
+
 ## v2.1.5 (2026-04-10)
 
 ### Bug Fixes
