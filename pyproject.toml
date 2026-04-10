@@ -1,6 +1,6 @@
 [project]
 name = "pypkgkit"
-version = "0.1.0"
+version = "2.0.0"
 description = "A template for python packages"
 readme = "README.md"
 authors = [
@@ -64,7 +64,6 @@ ignore = []
 convention = "google"
 
 [tool.semantic_release]
-allow_zero_version = true
 version_toml = ["pyproject.toml:project.version"]
 version_variables = ["src/pypkgkit/__init__.py:__version__"]
 commit_message = "chore(release): {version}"
