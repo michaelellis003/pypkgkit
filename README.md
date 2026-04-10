@@ -1,5 +1,12 @@
 # pypkgkit
 
+[![CI](https://github.com/michaelellis003/pypkgkit/actions/workflows/ci.yml/badge.svg)](https://github.com/michaelellis003/pypkgkit/actions/workflows/ci.yml)
+[![PyPI](https://img.shields.io/pypi/v/pypkgkit)](https://pypi.org/project/pypkgkit/)
+[![Python](https://img.shields.io/pypi/pyversions/pypkgkit)](https://pypi.org/project/pypkgkit/)
+[![codecov](https://codecov.io/github/michaelellis003/pypkgkit/graph/badge.svg?token=8GCPQ1QHMF)](https://codecov.io/github/michaelellis003/pypkgkit)
+[![License](https://img.shields.io/github/license/michaelellis003/pypkgkit)](LICENSE)
+[![Docs](https://img.shields.io/badge/docs-GitHub%20Pages-blue)](https://michaelellis003.github.io/pypkgkit/)
+
 A minimal, opinionated template for Python packages.
 
 The goal is straightforward: provide a single starting point that
