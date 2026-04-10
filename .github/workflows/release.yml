@@ -34,6 +34,21 @@ jobs:
         uses: python-semantic-release/python-semantic-release@350c48fcb3ffcdfd2e0a235206bc2ecea6b69df0  # v10.5.3
         with:
           github_token: ${{ secrets.RELEASE_TOKEN }}
+          push: "false"
+          vcs_release: "false"
+
+      - name: Update lockfile and push release
+        if: steps.semver.outputs.released == 'true'
+        run: |
+          VERSION="${{ steps.semver.outputs.version }}"
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          uv lock --upgrade-package pypkgkit
+          git add uv.lock
+          git tag -d "v${VERSION}"
+          git commit --amend --no-edit
+          git tag "v${VERSION}"
+          git push origin main --follow-tags
 
       - name: Build package
         if: steps.semver.outputs.released == 'true'
@@ -45,11 +60,8 @@ jobs:
         with:
           attestations: true
 
-      - name: Update lockfile after version bump
+      - name: Create GitHub Release
         if: steps.semver.outputs.released == 'true'
-        run: |
-          git pull --ff-only
-          uv lock --upgrade-package pypkgkit
-          git add uv.lock
-          git diff --staged --quiet || \
-            git commit -m "chore: update lockfile after release" && git push
+        run: gh release create "v${{ steps.semver.outputs.version }}" dist/* --generate-notes
+        env:
+          GH_TOKEN: ${{ secrets.RELEASE_TOKEN }}
