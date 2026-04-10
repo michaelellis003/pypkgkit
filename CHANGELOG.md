@@ -2,6 +2,14 @@
 
 <!-- version list -->
 
+## v2.1.7 (2026-04-10)
+
+### Bug Fixes
+
+- Capitalize module docstring ([#70](https://github.com/michaelellis003/pypkgkit/pull/70),
+  [`fcbb258`](https://github.com/michaelellis003/pypkgkit/commit/fcbb258b6331e5d2937525fffa36332008610af9))
+
+
 ## v2.1.6 (2026-04-10)
 
 ### Bug Fixes

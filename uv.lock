@@ -743,7 +743,7 @@ wheels = [
 
 [[package]]
 name = "pypkgkit"
-version = "2.1.6"
+version = "2.1.7"
 source = { editable = "." }
 
 [package.dev-dependencies]
