@@ -2,6 +2,19 @@
 
 <!-- version list -->
 
+## v2.1.2 (2026-04-10)
+
+### Bug Fixes
+
+- Correct CLI entrypoint and document PyPI installation
+  ([#64](https://github.com/michaelellis003/pypkgkit/pull/64),
+  [`a233127`](https://github.com/michaelellis003/pypkgkit/commit/a233127f1db416427abe97b7d843417cac17b48d))
+
+- Regenerate lockfile after version bump
+  ([#64](https://github.com/michaelellis003/pypkgkit/pull/64),
+  [`a233127`](https://github.com/michaelellis003/pypkgkit/commit/a233127f1db416427abe97b7d843417cac17b48d))
+
+
 ## v2.1.1 (2026-04-10)
 
 ### Bug Fixes
