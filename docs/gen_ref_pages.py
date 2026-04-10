@@ -1,7 +1,7 @@
 # Copyright Contributors to the pypkgkit project.
 # SPDX-License-Identifier: Apache-2.0
 
-"""generate the code reference pages and navigation."""
+"""Generate the code reference pages and navigation."""
 
 from pathlib import Path
 
