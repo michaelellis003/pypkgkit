@@ -6,9 +6,9 @@
 [![Docs](https://img.shields.io/badge/docs-GitHub%20Pages-blue)](https://michaelellis003.github.io/pypkgkit/)
 
 A [Cookiecutter](https://cookiecutter.readthedocs.io/) template for
-Python packages. One command gives you a fully configured project with
+Python packages. A fully configured project with
 linting, type checking, testing, CI/CD, documentation, and automated
-releases — all wired together and ready to go.
+releases to PyPI.
 
 ## Quick start
 
