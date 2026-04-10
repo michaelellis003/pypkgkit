@@ -2,6 +2,25 @@
 
 <!-- version list -->
 
+## v2.1.8 (2026-04-10)
+
+### Bug Fixes
+
+- Release
+  ([`97aa899`](https://github.com/michaelellis003/pypkgkit/commit/97aa89946146190476ff638a335b16bc91f4d313))
+
+- Release
+  ([`728dd3b`](https://github.com/michaelellis003/pypkgkit/commit/728dd3b1605355d2e43eee136d484b0a3ad96ca4))
+
+- **docs**: Test
+  ([`bffe2ae`](https://github.com/michaelellis003/pypkgkit/commit/bffe2aefef665a256093f20ef89cef34d39a91b9))
+
+### Chores
+
+- **deps**: Bump codecov/codecov-action from 5.5.2 to 6.0.0
+  ([`d541412`](https://github.com/michaelellis003/pypkgkit/commit/d541412b28195884842d0424ae37e938e133eeea))
+
+
 ## v2.1.7 (2026-04-10)
 
 ### Bug Fixes
