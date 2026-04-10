@@ -57,7 +57,7 @@ Every generated project comes with:
 | Linting & formatting | [Ruff](https://docs.astral.sh/ruff/) |
 | Type checking | [ty](https://github.com/astral-sh/ty) |
 | Testing | [pytest](https://docs.pytest.org/) |
-| Documentation | [ProperDocs](https://properdocs.dev/) ([MkDocs Material](https://squidfunk.github.io/mkdocs-material/) + [mkdocstrings](https://mkdocstrings.github.io/)) |
+| Documentation | [ProperDocs](https://properdocs.org) ([MkDocs Material](https://squidfunk.github.io/mkdocs-material/) + [mkdocstrings](https://mkdocstrings.github.io/)) |
 | Versioning & releases | [python-semantic-release](https://python-semantic-release.readthedocs.io/) with [Conventional Commits](https://www.conventionalcommits.org/) |
 | CI/CD | GitHub Actions (lint, type check, test across 3.10 – 3.13, build, release to PyPI, deploy docs) |
 | Dependency updates | [Dependabot](https://docs.github.com/en/code-security/dependabot) (weekly, for both Actions and pip) |
