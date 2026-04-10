@@ -44,3 +44,12 @@ jobs:
         uses: pypa/gh-action-pypi-publish@cef221092ed1bacb1cc03d23a2d87d1d172e277b  # v1.14.0
         with:
           attestations: true
+
+      - name: Update lockfile after version bump
+        if: steps.semver.outputs.released == 'true'
+        run: |
+          git pull --ff-only
+          uv lock --upgrade-package pypkgkit
+          git add uv.lock
+          git diff --staged --quiet || \
+            git commit -m "chore: update lockfile after release" && git push
