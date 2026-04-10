@@ -5,5 +5,5 @@
 
 
 def main() -> None:
-    """Main function for pypkgkit."""
+    """Entry point for the pypkgkit CLI."""
     print("Hello from pypkgkit!")
