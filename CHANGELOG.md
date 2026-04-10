@@ -2,6 +2,15 @@
 
 <!-- version list -->
 
+## v2.1.1 (2026-04-10)
+
+### Bug Fixes
+
+- Resolve docs deployment failure after version bump
+  ([#63](https://github.com/michaelellis003/pypkgkit/pull/63),
+  [`f1f1a41`](https://github.com/michaelellis003/pypkgkit/commit/f1f1a41b3fd9fe6e40c2e4dbe4750ea17c3edd2e))
+
+
 ## v2.1.0 (2026-04-10)
 
 ### Bug Fixes
