@@ -12,13 +12,29 @@ releases — all wired together and ready to go.
 
 ## Quick start
 
+### From GitHub (latest)
+
 ```bash
 # Install cookiecutter if you haven't already
 uv tool install cookiecutter
 
-# Generate a new project
+# Generate a new project from the latest template
 cookiecutter gh:michaelellis003/pypkgkit
 ```
+
+### From PyPI (pinned version)
+
+```bash
+# Install pypkgkit
+uv tool install pypkgkit
+
+# Generate a new project using a specific release
+uvx cookiecutter pypkgkit
+```
+
+Installing from PyPI lets you pin to a specific template version. The
+package includes the cookiecutter template and can be used directly as
+a cookiecutter source.
 
 You will be prompted for a few values:
 

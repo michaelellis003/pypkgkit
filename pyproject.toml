@@ -22,7 +22,7 @@ classifiers = [
 dependencies = []
 
 [project.scripts]
-pypkgkit = "pypkgkit:main"
+pypkgkit = "pypkgkit.main:main"
 
 [build-system]
 requires = ["uv_build>=0.9.5,<0.12.0"]
