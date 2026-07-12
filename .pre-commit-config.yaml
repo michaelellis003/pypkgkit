@@ -11,6 +11,16 @@ repos:
         exclude: '\{\{cookiecutter'
       - id: check-yaml
         exclude: '\{\{cookiecutter'
+      - id: check-toml
+        exclude: '\{\{cookiecutter'
+      - id: check-added-large-files
+      - id: detect-private-key
+
+  # Keep uv.lock in sync with pyproject.toml
+  - repo: https://github.com/astral-sh/uv-pre-commit
+    rev: 0.11.28
+    hooks:
+      - id: uv-lock
 
   # 2. Conventional Commits
   - repo: https://github.com/compilerla/conventional-pre-commit
