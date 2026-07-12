@@ -2,6 +2,21 @@
 
 <!-- version list -->
 
+## v2.2.0 (2026-07-12)
+
+### Features
+
+- Harden template guardrails and fix CI matrix generation
+  ([#12](https://github.com/michaelellis003/pypkgkit/pull/12),
+  [`7011393`](https://github.com/michaelellis003/pypkgkit/commit/701139311cf247739c5c97379ccf998d19770984))
+
+### Testing
+
+- Cover CLI entry point to satisfy coverage floor
+  ([#12](https://github.com/michaelellis003/pypkgkit/pull/12),
+  [`7011393`](https://github.com/michaelellis003/pypkgkit/commit/701139311cf247739c5c97379ccf998d19770984))
+
+
 ## v2.1.8 (2026-04-10)
 
 ### Bug Fixes
