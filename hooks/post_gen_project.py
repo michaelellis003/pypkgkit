@@ -1,10 +1,10 @@
 # Copyright Contributors to the pypkgkit project.
 # SPDX-License-Identifier: Apache-2.0
 
-# !/usr/bin/env python
 """Post-generation hook for the pypkgkit cookiecutter template."""
 
 import datetime
+import os
 import pathlib
 import subprocess
 
@@ -43,9 +43,13 @@ def install_pre_commit_hooks():
 
 
 def initial_commit():
-    """Create the initial commit."""
-    import os
+    """Create the initial commit.
 
+    A failure here must not raise: cookiecutter deletes the generated
+    project when a hook exits non-zero, which would throw away a
+    perfectly usable checkout over a lint error. Warn and let the user
+    commit by hand instead.
+    """
     env = {**os.environ, "SKIP": "conventional-pre-commit"}
     msg = "feat: initial project from pypkgkit template"
     subprocess.run(["git", "add", "."], check=True)
@@ -53,7 +57,13 @@ def initial_commit():
     if result.returncode != 0:
         # Pre-commit hooks may have auto-fixed files; re-stage and retry.
         subprocess.run(["git", "add", "."], check=True)
-        subprocess.run(["git", "commit", "-m", msg], check=True, env=env)
+        result = subprocess.run(["git", "commit", "-m", msg], env=env)
+    if result.returncode != 0:
+        print(
+            "\nWARNING: the initial commit failed (see pre-commit output "
+            "above).\nThe project was still generated. Fix the reported "
+            f"issues, then run:\n  git add . && git commit -m '{msg}'"
+        )
 
 
 def main():

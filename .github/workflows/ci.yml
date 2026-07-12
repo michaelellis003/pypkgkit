@@ -73,7 +73,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        python-version: ["3.10", "3.11", "3.12", "3.13"]
+        python-version: ["3.10", "3.11", "3.12", "3.13", "3.14"]
     steps:
       - name: Checkout
         uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd  # v6
@@ -177,6 +177,53 @@ jobs:
           VIRTUAL_ENV=/tmp/test-install uv pip install dist/*.whl
           /tmp/test-install/bin/python -c "import ${PACKAGE_NAME}; print(${PACKAGE_NAME}.__version__)"
 
+  # Render the template and run the generated project's own checks.
+  # Catches template-only breakage the package jobs above can't see.
+  bake:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    strategy:
+      fail-fast: false
+      matrix:
+        # Oldest and newest supported minimums; a non-3.10 minimum
+        # exercises the templated CI matrix and ruff target-version.
+        python-version: ["3.10", "3.13"]
+    steps:
+      - name: Checkout
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd  # v6
+
+      - name: Setup uv
+        uses: ./.github/actions/setup-uv
+        with:
+          python-version: ${{ matrix.python-version }}
+
+      - name: Bake template
+        run: |
+          git config --global user.name "bake-bot"
+          git config --global user.email "bake@example.com"
+          # Long description regression test: must not break the
+          # generated module docstring or the initial commit.
+          uvx cookiecutter . --no-input --output-dir /tmp/bake \
+            project_name=sample-project \
+            project_description="A deliberately long project description that would overflow an eighty character line if the template failed to wrap it" \
+            author_name="Bake Bot" \
+            author_email="bake@example.com" \
+            github_username="bake-bot" \
+            python_version="${{ matrix.python-version }}"
+
+      - name: Generated project has an initial commit
+        working-directory: /tmp/bake/sample_project
+        run: git log --oneline -1
+
+      - name: Run generated project's checks
+        working-directory: /tmp/bake/sample_project
+        run: |
+          uv run ruff check .
+          uv run ruff format --check .
+          uv run python scripts/update_headers.py --check
+          uv run ty check
+          uv run pytest -v
+
   ci-pass:
     if: always()
     needs:
@@ -190,6 +237,7 @@ jobs:
       - pytest-macos
       - pytest-windows
       - build
+      - bake
     runs-on: ubuntu-latest
     timeout-minutes: 1
     steps:
